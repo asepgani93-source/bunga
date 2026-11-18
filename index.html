@@ -165,24 +165,45 @@
       }
     }
 
-    @media (max-width: 700px) {
+    @media (max-width: 700px), (orientation: portrait) {
+      .title {
+        top: 2.5vh;
+      }
+
       .title .eyebrow {
         font-size: 8px;
         letter-spacing: 5px;
+        margin-bottom: 5px;
+      }
+
+      .title h1 {
+        font-size: clamp(28px, 7.5vw, 44px);
+        letter-spacing: 2px;
+      }
+
+      .title .line {
+        width: 36px;
+        margin: 8px auto 7px;
       }
 
       .title .sub {
-        font-size: 13px;
+        font-size: 11px;
+        letter-spacing: 1px;
       }
 
       .controls {
-        right: 12px;
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
         bottom: 12px;
+        padding: 4px;
+        gap: 3px;
       }
 
       .controls button {
-        padding: 9px 12px;
+        padding: 8px 14px;
         font-size: 10px;
+        letter-spacing: 1px;
       }
 
       .footer-mark {
@@ -331,7 +352,7 @@
       }
       const MIST_TEX = [makeMist(34, 88, 138), makeMist(22, 68, 92)];
 
-      let W = 0, H = 0, DPR = 1, S = 0, SX = 0, CX = 0;
+      let W = 0, H = 0, DPR = 1, S = 0, SX = 0, CX = 0, isMobile = false;
 
       /* =========================================================
          STATIC LAYERS
@@ -437,16 +458,25 @@
       }
 
       function resize() {
-        DPR = Math.min(window.devicePixelRatio || 1, 1.25);
         W = window.innerWidth; H = window.innerHeight;
+        isMobile = W < 768 || W < H;
+        DPR = isMobile ? Math.min(window.devicePixelRatio || 1, 1.0) : Math.min(window.devicePixelRatio || 1, 1.25);
         const pw = Math.round(W * DPR), ph = Math.round(H * DPR);
         canvas.width = pw; canvas.height = ph;
         canvas.style.width = W + "px"; canvas.style.height = H + "px";
-        midCv.width = Math.max(2, Math.round(W / 3)); midCv.height = Math.max(2, Math.round(H / 3));
-        glowCv.width = Math.max(2, Math.round(W / 9)); glowCv.height = Math.max(2, Math.round(H / 9));
+        midCv.width = Math.max(2, Math.round(W / (isMobile ? 3.5 : 3)));
+        midCv.height = Math.max(2, Math.round(H / (isMobile ? 3.5 : 3)));
+        glowCv.width = Math.max(2, Math.round(W / (isMobile ? 10 : 9)));
+        glowCv.height = Math.max(2, Math.round(H / (isMobile ? 10 : 9)));
         ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-        S = Math.min(W * 0.44, H * 0.42);
-        SX = Math.min(S * 0.96, W * 0.30);
+
+        if (isMobile) {
+          S = Math.min(W * 0.44, H * 0.29);
+          SX = Math.min(S * 0.65, W * 0.22);
+        } else {
+          S = Math.min(W * 0.44, H * 0.42);
+          SX = Math.min(S * 0.96, W * 0.30);
+        }
         CX = W * 0.5;
         let maxPad = 64;
         for (const rose of ROSES) {
@@ -481,20 +511,20 @@
         const arr = [];
         for (let i = 0; i < 5; i++) {
           arr.push({
-            kind: 1, t: 1,
+            kind: 1, t: 1, isHero,
             theta: i * TAU / 5 + 0.35 + (rr() - 0.5) * 0.2,
             len: 0.42 * (0.9 + rr() * 0.2),
             wr: 0.17,
             r0: 0.105, z0: -0.078,
             seed: rr() * 100, hue: 0, j1: 0, j2: 0,
-            U: isHero ? 7 : 6,
-            V: 4
+            U: isHero ? 7 : 5,
+            V: isHero ? 4 : 3
           });
         }
         for (let k = 0; k < np; k++) {
           const t = k / (np - 1);
           arr.push({
-            kind: 0, t,
+            kind: 0, t, isHero,
             theta: k * GOLD + (rr() - 0.5) * 0.20,
             len: lerp(0.24, 0.65, Math.pow(t, 0.78)) * (0.94 + rr() * 0.12),
             wr: lerp(0.28, 0.53, t) * (0.92 + rr() * 0.16),
@@ -504,8 +534,8 @@
             hue: (rr() - 0.5) * 0.45,
             j1: rr() - 0.5, j2: rr() - 0.5,
             start: 0.06 + (1 - t) * 0.58,
-            U: isHero ? (t > 0.32 ? 14 : 10) : (t > 0.32 ? 11 : 8),
-            V: isHero ? (t > 0.32 ? 10 : 8) : (t > 0.32 ? 8 : 6),
+            U: isHero ? (t > 0.32 ? 14 : 10) : (t > 0.32 ? 10 : 7),
+            V: isHero ? (t > 0.32 ? 10 : 8) : (t > 0.32 ? 7 : 5),
             dew: null
           });
         }
@@ -1115,7 +1145,7 @@
 
       function drawPlant(time, top, grow, rose, T, alpha) {
         if (alpha <= 0.001 || grow <= 0.001) return;
-        const by = H + 40, bx = CX + rose.bxOff * SX;
+        const by = H + 40, bx = CX + rose.bxOff * SX * (isMobile ? 0.72 : 1.0);
         const dy = by - top.y;
         const bend = (top.x - bx) * 0.24;
         const p0x = top.x, p0y = top.y;
@@ -1372,6 +1402,10 @@
         return c;
       });
 
+        x.stroke();
+        return c;
+      });
+
       function drawFallPetal(f, alpha) {
         const x = f.x * W, y = f.y * H, size = f.sz * S * f.z;
         const fy = Math.cos(f.flip);
@@ -1444,7 +1478,8 @@
       }
 
       function createSpark(x, y, vx, vy, pal, useAlt, life, size, drag, grav, strobe, canSplit, shedRate = 0.22, crackle = false, depth = 1) {
-        if (fwSparks.length >= MAX_FW_SPARKS) return;
+        const curMaxSparks = isMobile ? 180 : MAX_FW_SPARKS;
+        if (fwSparks.length >= curMaxSparks) return;
         let sp = sparkPool.pop();
         if (!sp) {
           sp = { hx: new Float32Array(TRAIL_LEN), hy: new Float32Array(TRAIL_LEN) };
@@ -1464,7 +1499,8 @@
       }
 
       function createEmber(x, y, vx, vy, col, life, size, twinkle) {
-        if (fwEmbers.length >= MAX_FW_EMBERS) return;
+        const curMaxEmbers = isMobile ? 180 : MAX_FW_EMBERS;
+        if (fwEmbers.length >= curMaxEmbers) return;
         let em = emberPool.pop();
         if (!em) em = {};
         em.x = x; em.y = y; em.vx = vx; em.vy = vy; em.col = col;
@@ -2097,237 +2133,280 @@
         ctx.restore();
       }
 
-      /* =========================================================
-         MAIN LOOP
-      ========================================================= */
-      let startTime = performance.now();
-      let loopMode = false;
-      let last = performance.now();
-      let smoothDt = 16.67;
-      let frameIdx = 0;
-      const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
-      const CYCLE = 36;
+        ctx.strokeStyle = `rgba(${pp.col[0]},${pp.col[1]},${pp.col[2]},${a * 0.75})`;
+        ctx.lineWidth = 0.75;
+        const rr = pp.r * 3.4;
+        ctx.beginPath();
+        ctx.moveTo(pp.x - rr, pp.y); ctx.lineTo(pp.x + rr, pp.y);
+        ctx.moveTo(pp.x, pp.y - rr); ctx.lineTo(pp.x, pp.y + rr);
+        ctx.stroke();
+      }
 
-      window.addEventListener("pointermove", e => {
-        mouse.tx = (e.clientX / W - 0.5) * 2;
-        mouse.ty = (e.clientY / H - 0.5) * 2;
-      });
-      window.addEventListener("pointerleave", () => { mouse.tx = 0; mouse.ty = 0; });
+      // Smoothly update dynamic firework light for the 3D rose
+      if (lwSum > 0.001) {
+        const n = norm3(lxAcc, lyAcc, lzAcc);
+        const intensity = Math.min(0.65, lwSum * 0.55);
+        fwLight.lx += (n[0] - fwLight.lx) * 0.18;
+        fwLight.ly += (n[1] - fwLight.ly) * 0.18;
+        fwLight.lz += (n[2] - fwLight.lz) * 0.18;
+        const tr = (lrAcc / lwSum) * intensity;
+        const tg = (lgAcc / lwSum) * intensity;
+        const tb = (lbAcc / lwSum) * intensity;
+        fwLight.r += (tr - fwLight.r) * 0.22;
+        fwLight.g += (tg - fwLight.g) * 0.22;
+        fwLight.b += (tb - fwLight.b) * 0.22;
+      } else {
+        fwLight.r *= 0.88;
+        fwLight.g *= 0.88;
+        fwLight.b *= 0.88;
+      }
 
-      function frame(now) {
-        const rawDt = Math.min(50, Math.max(1, now - last));
-        last = now;
-        smoothDt += (rawDt - smoothDt) * 0.25;
-        const dt = smoothDt;
-        frameIdx++;
-        const mLerp = 1 - Math.pow(0.965, dt / 16.667);
-        mouse.x += (mouse.tx - mouse.x) * mLerp;
-        mouse.y += (mouse.ty - mouse.y) * mLerp;
+      ctx.restore();
+    }
 
-        let T = (now - startTime) / 1000;
-        let fade = 1;
-        if (loopMode) {
-          T = T % CYCLE;
-          fade = Math.min(smooth(0, 0.7, T), 1 - smooth(CYCLE - 2.0, CYCLE, T));
-        }
+    /* =========================================================
+       MAIN LOOP
+    ========================================================= */
+    let startTime = performance.now();
+    let loopMode = false;
+    let last = performance.now();
+    let smoothDt = 16.67;
+    let frameIdx = 0;
+    const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
+    const CYCLE = 36;
 
-        const gust = Math.sin(now * 0.00042) * 0.6 + Math.sin(now * 0.0011 + 0.7) * 0.4;
-        const heroRose = ROSES[ROSES.length - 1];
-        const heroP = easeInOutSine(clamp((T - heroRose.bloomStart) / heroRose.bloomDur));
+    window.addEventListener("pointermove", e => {
+      mouse.tx = (e.clientX / W - 0.5) * 2;
+      mouse.ty = (e.clientY / H - 0.5) * 2;
+    });
+    window.addEventListener("pointerleave", () => { mouse.tx = 0; mouse.ty = 0; });
 
-        // ---- background
-        ctx.globalCompositeOperation = "source-over";
-        ctx.globalAlpha = 1;
-        ctx.drawImage(bgCv, 0, 0, W, H);
+    function frame(now) {
+      const rawDt = Math.min(50, Math.max(1, now - last));
+      last = now;
+      smoothDt += (rawDt - smoothDt) * 0.25;
+      const dt = smoothDt;
+      frameIdx++;
+      const mLerp = 1 - Math.pow(0.965, dt / 16.667);
+      mouse.x += (mouse.tx - mouse.x) * mLerp;
+      mouse.y += (mouse.ty - mouse.y) * mLerp;
 
-        ctx.globalCompositeOperation = "screen";
-        for (const s of twinkle) {
-          const a = 0.15 + 0.55 * Math.pow(0.5 + 0.5 * Math.sin(now * 0.001 * s.sp + s.ph), 3);
-          ctx.globalAlpha = a;
-          const r = s.r * 6;
-          ctx.drawImage(SOFT, s.x * W - r, s.y * H - r, r * 2, r * 2);
-        }
+      let T = (now - startTime) / 1000;
+      let fade = 1;
+      if (loopMode) {
+        T = T % CYCLE;
+        fade = Math.min(smooth(0, 0.7, T), 1 - smooth(CYCLE - 2.0, CYCLE, T));
+      }
 
-        ctx.globalAlpha = 0.75 + 0.25 * Math.sin(now * 0.00035);
-        ctx.drawImage(raysCv, Math.sin(now * 0.00012) * 12 - 20, 0, W + 40, H);
+      const gust = Math.sin(now * 0.00042) * 0.6 + Math.sin(now * 0.0011 + 0.7) * 0.4;
+      const heroRose = ROSES[ROSES.length - 1];
+      const heroP = easeInOutSine(clamp((T - heroRose.bloomStart) / heroRose.bloomDur));
 
-        for (const b of bokeh) {
-          const y = (((b.y - now * 0.00001 * b.sp * 10) % 1) + 1) % 1;
-          const x = b.x + Math.sin(now * 0.00018 + b.ph) * 0.015 - mouse.x * b.z * 0.015;
-          const r = b.r * Math.min(W, H) * (0.6 + b.z * 0.7) * (0.92 + 0.08 * Math.sin(now * 0.0006 + b.ph));
-          ctx.globalAlpha = b.a * (0.7 + 0.3 * Math.sin(now * 0.0005 + b.ph * 2));
-          ctx.drawImage(BOKEH[b.c], x * W - r, y * H * 1.1 - H * 0.05 - r, r * 2, r * 2);
-        }
-        ctx.globalCompositeOperation = "source-over";
-        ctx.globalAlpha = 1;
+      // ---- background
+      ctx.globalCompositeOperation = "source-over";
+      ctx.globalAlpha = 1;
+      ctx.drawImage(bgCv, 0, 0, W, H);
 
-        // ---- shooting stars & fireworks in night sky
-        updateAndDrawMeteors(dt, fade);
-        updateAndDrawFireworks(dt, now, fade);
+      ctx.globalCompositeOperation = "screen";
+      for (const s of twinkle) {
+        const a = 0.15 + 0.55 * Math.pow(0.5 + 0.5 * Math.sin(now * 0.001 * s.sp + s.ph), 3);
+        ctx.globalAlpha = a;
+        const r = s.r * 6;
+        ctx.drawImage(SOFT, s.x * W - r, s.y * H - r, r * 2, r * 2);
+      }
 
-        // ---- background drifting mist
-        drawMist(dt, now, gust, fade, false);
+      ctx.globalAlpha = 0.75 + 0.25 * Math.sin(now * 0.00035);
+      ctx.drawImage(raysCv, Math.sin(now * 0.00012) * 12 - 20, 0, W + 40, H);
 
-        // ---- falling petals (far)
-        const fallA = smooth(0.45, 0.90, heroP) * fade;
-        for (const f of falling) {
-          f.y += f.vy * f.z * dt / 1000;
-          f.x += (f.vx + gust * 0.009 + Math.sin(now * 0.0007 + f.ph) * 0.012) * dt / 1000;
-          f.rot += f.vr * dt / 1000; f.flip += f.vf * dt / 1000;
-          if (f.y > 1.12 || f.x < -0.1 || f.x > 1.1) newFall(f, false);
-          if (f.z <= 0.95 && fallA > 0) drawFallPetal(f, fallA);
-        }
+      const bokehCount = isMobile ? 14 : bokeh.length;
+      for (let bi = 0; bi < bokehCount; bi++) {
+        const b = bokeh[bi];
+        const y = (((b.y - now * 0.00001 * b.sp * 10) % 1) + 1) % 1;
+        const x = b.x + Math.sin(now * 0.00018 + b.ph) * 0.015 - mouse.x * b.z * 0.015;
+        const r = b.r * Math.min(W, H) * (0.6 + b.z * 0.7) * (0.92 + 0.08 * Math.sin(now * 0.0006 + b.ph));
+        ctx.globalAlpha = b.a * (0.7 + 0.3 * Math.sin(now * 0.0005 + b.ph * 2));
+        ctx.drawImage(BOKEH[b.c], x * W - r, y * H * 1.1 - H * 0.05 - r, r * 2, r * 2);
+      }
+      ctx.globalCompositeOperation = "source-over";
+      ctx.globalAlpha = 1;
 
-        // ---- 5-rose bouquet: 3-slot balanced 3D mesh update + decoupled 60fps wind/breath transform
-        mctx.clearRect(0, 0, midCv.width, midCv.height);
-        const mxScale = midCv.width / W, myScale = midCv.height / H;
-        let anyRose = false;
-        const slot = frameIdx % 3;
-        const fwTot = fwLight.r + fwLight.g + fwLight.b;
+      // ---- shooting stars & fireworks in night sky
+      updateAndDrawMeteors(dt, fade);
+      updateAndDrawFireworks(dt, now, fade);
 
-        for (let rIdx = 0; rIdx < ROSES.length; rIdx++) {
-          const rose = ROSES[rIdx];
-          const grow = easeOutCubic(clamp((T - rose.stemStart) / 2.2));
-          if (grow <= 0.001) continue;
+      // ---- background drifting mist
+      drawMist(dt, now, gust, fade, false);
 
-          const hst = clamp((T - rose.stemStart - 0.85) / 1.9);
-          const hs = hst * hst * (3 - 2 * hst);
-          const p = easeInOutSine(clamp((T - rose.bloomStart) / rose.bloomDur));
-          const ep = easeInOutSine(p);
+      // ---- falling petals (far)
+      const fallA = smooth(0.45, 0.90, heroP) * fade;
+      for (const f of falling) {
+        f.y += f.vy * f.z * dt / 1000;
+        f.x += (f.vx + gust * 0.009 + Math.sin(now * 0.0007 + f.ph) * 0.012) * dt / 1000;
+        f.rot += f.vr * dt / 1000; f.flip += f.vf * dt / 1000;
+        if (f.y > 1.12 || f.x < -0.1 || f.x > 1.1) newFall(f, false);
+        if (f.z <= 0.95 && fallA > 0) drawFallPetal(f, fallA);
+      }
 
-          const beta = lerp(0.36, 0.68, ep) + rose.pitch + mouse.y * 0.05;
-          cam.cb = Math.cos(beta); cam.sb = Math.sin(beta);
-          cam.Cy = -cam.cb; cam.Cz = cam.sb;
-          cam.HK = norm3(LK[0], LK[1] + cam.Cy, LK[2] + cam.Cz);
-          const windSway = Math.sin(now * 0.00071 + rose.seedOffset * 0.13) * 0.042 + Math.sin(now * 0.0017 + 1.3 + rose.seedOffset) * 0.011 + gust * 0.014;
-          const wy = rose.lean + windSway;
-          const wx = Math.sin(now * 0.00053 + 1 + rose.seedOffset * 0.17) * 0.025;
-          cam.cwy = Math.cos(wy); cam.swy = Math.sin(wy);
-          cam.cwx = Math.cos(wx); cam.swx = Math.sin(wx);
-          cam.spin = rose.spinOff + mouse.x * 0.25;
-          cam.sc = S * rose.scale * hs;
-          cam.hx = CX + rose.dx * SX + wy * S * 0.30 * rose.scale + mouse.x * S * 0.02 * rose.depth;
-          cam.hy = H * lerp(0.61, 0.56, ep) + rose.dy * S + Math.abs(wy) * S * 0.04;
+      // ---- 5-rose bouquet: perfectly flat 1-rose-per-frame schedule + decoupled 60fps wind/breath transform
+      mctx.clearRect(0, 0, midCv.width, midCv.height);
+      const mxScale = midCv.width / W, myScale = midCv.height / H;
+      let anyRose = false;
+      // Schedule: hero rose on even frames, companions in turn on odd frames.
+      // Guarantees AT MOST ONE rose ever computes 3D geometry in any single frame!
+      const SCHEDULE = [4, 0, 4, 1, 4, 2, 4, 3];
+      const updateCandidateIdx = SCHEDULE[frameIdx & 7];
+      const fwTot = fwLight.r + fwLight.g + fwLight.b;
+      const sprX = isMobile ? 0.72 : 1.0;
+      const sprY = isMobile ? 1.08 : 1.0;
 
-          // aura behind head (pre-rendered radial sprite)
-          transform(0, 0, 0.15, TMP2, 0);
-          const auraA = (0.04 + 0.08 * p) * fade * hs;
-          if (auraA > 0.001) {
-            const ar = S * rose.scale * 1.05;
-            ctx.globalAlpha = auraA;
-            ctx.drawImage(AURA_SPR, TMP2[3] - ar, TMP2[4] - ar, ar * 2, ar * 2);
-            ctx.globalAlpha = 1;
-          }
+      for (let rIdx = 0; rIdx < ROSES.length; rIdx++) {
+        const rose = ROSES[rIdx];
+        const grow = easeOutCubic(clamp((T - rose.stemStart) / 2.2));
+        if (grow <= 0.001) continue;
 
-          // stem, thorns & compound leaves
-          transform(0, 0, -0.12, TMP2, 0);
-          drawPlant(now, { x: TMP2[3], y: TMP2[4] }, grow, rose, T, fade);
-          transform(0, 0, -0.085, TMP2, 0);
-          drawReceptacle(TMP2[3], TMP2[4], hs, rose.scale, fade);
+        const hst = clamp((T - rose.stemStart - 0.85) / 1.9);
+        const hs = hst * hst * (3 - 2 * hst);
+        const p = easeInOutSine(clamp((T - rose.bloomStart) / rose.bloomDur));
+        const ep = easeInOutSine(p);
 
-          // 3D flower head (3-slot balanced mesh update + 60fps decoupled wind/breath transform)
-          if (hs > 0.01) {
-            anyRose = true;
-            const inSlot = rose.isHero ? (slot === 0) : (slot === ((rIdx >> 1) + 1));
-            const dirty = !rose.hasCache || Math.abs(p - rose.cacheP) > 0.0004 || Math.abs(fwTot - (rose.cacheFw || 0)) > 0.025 || Math.abs(mouse.x - (rose.cacheMx || 0)) + Math.abs(mouse.y - (rose.cacheMy || 0)) > 0.015;
-            if (!rose.hasCache || (inSlot && dirty)) {
-              const mWy = rose.lean + mouse.x * 0.08;
-              const mWx = mouse.y * 0.04;
-              cam.cwy = Math.cos(mWy); cam.swy = Math.sin(mWy);
-              cam.cwx = Math.cos(mWx); cam.swx = Math.sin(mWx);
-              renderRose(now, p, rose);
-              rose.cacheP = p;
-              rose.cacheFw = fwTot;
-              rose.cacheMx = mouse.x;
-              rose.cacheMy = mouse.y;
-            }
-            const breath = 1 + 0.0035 * Math.sin(now * 0.0012 + rose.seedOffset);
-            const rHalf = rose.pad * hs * breath, rw = rHalf * 2;
-            const rot2d = windSway * 0.52 + Math.sin(now * 0.00035 + rose.seedOffset) * 0.018;
-            const tiltY = 1 - wx * 0.25;
-            ctx.save();
-            ctx.globalAlpha = fade;
-            ctx.translate(cam.hx, cam.hy);
-            ctx.rotate(rot2d);
-            ctx.scale(1, tiltY);
-            ctx.drawImage(rose.cv, -rHalf, -rHalf, rw, rw);
-            ctx.restore();
-            mctx.drawImage(rose.cv, (cam.hx - rHalf) * mxScale, (cam.hy - rHalf) * myScale, rw * mxScale, rw * myScale);
-          } else {
-            rose.hasCache = false;
-          }
-        }
+        const beta = lerp(0.36, 0.68, ep) + rose.pitch + mouse.y * 0.05;
+        cam.cb = Math.cos(beta); cam.sb = Math.sin(beta);
+        cam.Cy = -cam.cb; cam.Cz = cam.sb;
+        cam.HK = norm3(LK[0], LK[1] + cam.Cy, LK[2] + cam.Cz);
+        const windSway = Math.sin(now * 0.00071 + rose.seedOffset * 0.13) * 0.042 + Math.sin(now * 0.0017 + 1.3 + rose.seedOffset) * 0.011 + gust * 0.014;
+        const wy = rose.lean + windSway;
+        const wx = Math.sin(now * 0.00053 + 1 + rose.seedOffset * 0.17) * 0.025;
+        cam.cwy = Math.cos(wy); cam.swy = Math.sin(wy);
+        cam.cwx = Math.cos(wx); cam.swx = Math.sin(wx);
+        cam.spin = rose.spinOff + mouse.x * 0.25;
+        cam.sc = S * rose.scale * hs;
+        cam.hx = CX + rose.dx * SX * sprX + wy * S * 0.26 * rose.scale + mouse.x * S * 0.02 * rose.depth;
+        const baseHy = isMobile ? H * lerp(0.63, 0.58, ep) : H * lerp(0.61, 0.56, ep);
+        cam.hy = baseHy + rose.dy * S * sprY + Math.abs(wy) * S * 0.04;
 
-        // shared bloom / glow across all 5 roses
-        if (anyRose) {
-          gctx.clearRect(0, 0, glowCv.width, glowCv.height);
-          gctx.drawImage(midCv, 0, 0, glowCv.width, glowCv.height);
-          ctx.globalCompositeOperation = "screen";
-          ctx.globalAlpha = 0.34 * fade;
-          ctx.drawImage(glowCv, 0, 0, W, H);
-          ctx.globalCompositeOperation = "source-over";
+        // aura behind head (pre-rendered radial sprite)
+        transform(0, 0, 0.15, TMP2, 0);
+        const auraA = (0.04 + 0.08 * p) * fade * hs;
+        if (auraA > 0.001) {
+          const ar = S * rose.scale * 1.05;
+          ctx.globalAlpha = auraA;
+          ctx.drawImage(AURA_SPR, TMP2[3] - ar, TMP2[4] - ar, ar * 2, ar * 2);
           ctx.globalAlpha = 1;
         }
 
-        // ---- fireflies & foreground garden mist
-        drawFireflies(now, gust, fade);
-        drawMist(dt, now, gust, fade, true);
+        // stem, thorns & compound leaves
+        transform(0, 0, -0.12, TMP2, 0);
+        drawPlant(now, { x: TMP2[3], y: TMP2[4] }, grow, rose, T, fade);
+        transform(0, 0, -0.085, TMP2, 0);
+        drawReceptacle(TMP2[3], TMP2[4], hs, rose.scale, fade);
 
-        // ---- dust motes
-        ctx.globalCompositeOperation = "screen";
-        for (const d of dust) {
-          const y = (((d.y - now * 0.00001 * d.sp * 3) % 1) + 1) % 1;
-          const x = d.x + Math.sin(now * 0.0004 + d.ph) * 0.01 + mouse.x * 0.006;
-          const a = d.a * (0.4 + 0.6 * (0.5 + 0.5 * Math.sin(now * 0.0016 + d.ph)));
-          ctx.globalAlpha = a;
-          const r = d.r * 5;
-          ctx.drawImage(d.gold ? SOFT_GOLD : SOFT, x * W - r, y * H - r, r * 2, r * 2);
+        // 3D flower head (1-rose-per-frame balanced mesh update + 60fps decoupled wind/breath transform)
+        if (hs > 0.01) {
+          anyRose = true;
+          const isTurn = (rIdx === updateCandidateIdx);
+          const dirty = !rose.hasCache || Math.abs(p - rose.cacheP) > 0.0004 || Math.abs(fwTot - (rose.cacheFw || 0)) > 0.035 || Math.abs(mouse.x - (rose.cacheMx || 0)) + Math.abs(mouse.y - (rose.cacheMy || 0)) > 0.02;
+          if (!rose.hasCache || (isTurn && dirty)) {
+            const mWy = rose.lean + mouse.x * 0.08;
+            const mWx = mouse.y * 0.04;
+            cam.cwy = Math.cos(mWy); cam.swy = Math.sin(mWy);
+            cam.cwx = Math.cos(mWx); cam.swx = Math.sin(mWx);
+            renderRose(now, p, rose);
+            rose.cacheP = p;
+            rose.cacheFw = fwTot;
+            rose.cacheMx = mouse.x;
+            rose.cacheMy = mouse.y;
+          }
+          const breath = 1 + 0.0035 * Math.sin(now * 0.0012 + rose.seedOffset);
+          const rHalf = rose.pad * hs * breath, rw = rHalf * 2;
+          const rot2d = windSway * 0.52 + Math.sin(now * 0.00035 + rose.seedOffset) * 0.018;
+          const tiltY = 1 - wx * 0.25;
+          ctx.save();
+          ctx.globalAlpha = fade;
+          ctx.translate(cam.hx, cam.hy);
+          ctx.rotate(rot2d);
+          ctx.scale(1, tiltY);
+          ctx.drawImage(rose.cv, -rHalf, -rHalf, rw, rw);
+          ctx.restore();
+          mctx.drawImage(rose.cv, (cam.hx - rHalf) * mxScale, (cam.hy - rHalf) * myScale, rw * mxScale, rw * myScale);
+        } else {
+          rose.hasCache = false;
         }
-        ctx.globalCompositeOperation = "source-over";
-        ctx.globalAlpha = 1;
-
-        // ---- falling petals (near)
-        if (fallA > 0) for (const f of falling) if (f.z > 0.95) drawFallPetal(f, fallA);
-
-        // ---- foreground bokeh
-        ctx.globalCompositeOperation = "screen";
-        for (const b of fgBokeh) {
-          const r = b.r * Math.min(W, H) * 1.6;
-          const x = b.x * W + Math.sin(now * 0.00015 + b.ph) * 20 - mouse.x * 30;
-          const y = b.y * H + Math.cos(now * 0.00012 + b.ph) * 14 - mouse.y * 20;
-          ctx.globalAlpha = b.a * (0.75 + 0.25 * Math.sin(now * 0.0004 + b.ph));
-          ctx.drawImage(BOKEH[b.c], x - r, y - r, r * 2, r * 2);
-        }
-        ctx.globalCompositeOperation = "source-over";
-        ctx.globalAlpha = 1;
-
-        // ---- vignette
-        ctx.drawImage(vigCv, 0, 0, W, H);
-
-        requestAnimationFrame(frame);
       }
 
-      replayBtn.addEventListener("click", () => {
-        startTime = performance.now();
-        for (const r of ROSES) r.hasCache = false;
-        falling.forEach(f => newFall(f, true));
-        initFireworks();
-      });
+      // shared bloom / glow across all 5 roses
+      if (anyRose) {
+        gctx.clearRect(0, 0, glowCv.width, glowCv.height);
+        gctx.drawImage(midCv, 0, 0, glowCv.width, glowCv.height);
+        ctx.globalCompositeOperation = "screen";
+        ctx.globalAlpha = 0.34 * fade;
+        ctx.drawImage(glowCv, 0, 0, W, H);
+        ctx.globalCompositeOperation = "source-over";
+        ctx.globalAlpha = 1;
+      }
 
-      loopBtn.addEventListener("click", () => {
-        loopMode = !loopMode;
-        loopBtn.classList.toggle("active", loopMode);
-        loopBtn.textContent = loopMode ? "✓ Siklus Aktif" : "∞ Siklus";
-        for (const r of ROSES) r.hasCache = false;
-        startTime = performance.now();
-      });
+      // ---- fireflies & foreground garden mist
+      drawFireflies(now, gust, fade);
+      drawMist(dt, now, gust, fade, true);
 
-      window.addEventListener("resize", resize);
-      resize();
-      initFireworks();
+      // ---- dust motes
+      const dustCount = isMobile ? 35 : dust.length;
+      ctx.globalCompositeOperation = "screen";
+      for (let di = 0; di < dustCount; di++) {
+        const d = dust[di];
+        const y = (((d.y - now * 0.00001 * d.sp * 3) % 1) + 1) % 1;
+        const x = d.x + Math.sin(now * 0.0004 + d.ph) * 0.01 + mouse.x * 0.006;
+        const a = d.a * (0.4 + 0.6 * (0.5 + 0.5 * Math.sin(now * 0.0016 + d.ph)));
+        ctx.globalAlpha = a;
+        const r = d.r * 5;
+        ctx.drawImage(d.gold ? SOFT_GOLD : SOFT, x * W - r, y * H - r, r * 2, r * 2);
+      }
+      ctx.globalCompositeOperation = "source-over";
+      ctx.globalAlpha = 1;
+
+      // ---- falling petals (near)
+      if (fallA > 0) for (const f of falling) if (f.z > 0.95) drawFallPetal(f, fallA);
+
+      // ---- foreground bokeh
+      const fgBCount = isMobile ? 4 : fgBokeh.length;
+      ctx.globalCompositeOperation = "screen";
+      for (let bi = 0; bi < fgBCount; bi++) {
+        const b = fgBokeh[bi];
+        const r = b.r * Math.min(W, H) * 1.6;
+        const x = b.x * W + Math.sin(now * 0.00015 + b.ph) * 20 - mouse.x * 30;
+        const y = b.y * H + Math.cos(now * 0.00012 + b.ph) * 14 - mouse.y * 20;
+        ctx.globalAlpha = b.a * (0.75 + 0.25 * Math.sin(now * 0.0004 + b.ph));
+        ctx.drawImage(BOKEH[b.c], x - r, y - r, r * 2, r * 2);
+      }
+      ctx.globalCompositeOperation = "source-over";
+      ctx.globalAlpha = 1;
+
+      // ---- vignette
+      ctx.drawImage(vigCv, 0, 0, W, H);
+
       requestAnimationFrame(frame);
-    })();
-  </script>
+    }
+
+    replayBtn.addEventListener("click", () => {
+      startTime = performance.now();
+      for (const r of ROSES) r.hasCache = false;
+      falling.forEach(f => newFall(f, true));
+      initFireworks();
+    });
+
+    loopBtn.addEventListener("click", () => {
+      loopMode = !loopMode;
+      loopBtn.classList.toggle("active", loopMode);
+      loopBtn.textContent = loopMode ? "✓ Siklus Aktif" : "∞ Siklus";
+      for (const r of ROSES) r.hasCache = false;
+      startTime = performance.now();
+    });
+
+    window.addEventListener("resize", resize);
+    resize();
+    initFireworks();
+    requestAnimationFrame(frame);
+  })();
+</script>
 </body>
 
 </html>
