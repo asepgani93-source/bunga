@@ -1,0 +1,2333 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blue Rose · Midnight Botanica</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@300;400&display=swap"
+    rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #01040a;
+      font-family: "Montserrat", Arial, Helvetica, sans-serif;
+    }
+
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .title {
+      position: fixed;
+      top: 4.2vh;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      pointer-events: none;
+      z-index: 10;
+      opacity: 0;
+      animation: titleIn 3.2s cubic-bezier(.2, .7, .2, 1) .6s forwards;
+    }
+
+    .title .eyebrow {
+      display: block;
+      font-size: 10px;
+      font-weight: 300;
+      letter-spacing: 7px;
+      text-transform: uppercase;
+      color: rgba(170, 200, 255, .42);
+      margin-bottom: 10px;
+    }
+
+    .title h1 {
+      font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+      font-size: clamp(40px, 5.4vw, 78px);
+      font-weight: 300;
+      letter-spacing: 3px;
+      line-height: 1;
+      color: rgba(236, 243, 255, .92);
+      text-shadow: 0 0 30px rgba(80, 130, 255, .25);
+    }
+
+    .title h1 em {
+      font-style: italic;
+      font-weight: 300;
+      background: linear-gradient(180deg, #cfe2ff 0%, #79a8ff 55%, #3f6fe0 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .title .line {
+      width: 46px;
+      height: 1px;
+      margin: 14px auto 12px;
+      background: linear-gradient(90deg, transparent, rgba(140, 180, 255, .6), transparent);
+    }
+
+    .title .sub {
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-style: italic;
+      font-size: 15px;
+      letter-spacing: 2px;
+      color: rgba(200, 218, 255, .38);
+    }
+
+    @keyframes titleIn {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -10px);
+        filter: blur(6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+        filter: blur(0);
+      }
+    }
+
+    .controls {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 20;
+      display: flex;
+      gap: 4px;
+      padding: 5px;
+      border-radius: 999px;
+      border: 1px solid rgba(130, 170, 255, .14);
+      background: rgba(6, 14, 30, .78);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, .4), inset 0 1px 0 rgba(255, 255, 255, .04);
+      opacity: 0;
+      animation: fadeIn 2s ease 2.4s forwards;
+    }
+
+    .controls button {
+      border: none;
+      border-radius: 999px;
+      background: transparent;
+      color: rgba(225, 236, 255, .78);
+      padding: 10px 16px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 1.5px;
+      transition: background .35s ease, color .35s ease;
+    }
+
+    .controls button:hover,
+    .controls button.active {
+      background: rgba(60, 110, 220, .28);
+      color: #fff;
+    }
+
+    .footer-mark {
+      position: fixed;
+      left: 22px;
+      bottom: 24px;
+      z-index: 5;
+      color: rgba(150, 180, 230, .22);
+      font-size: 9px;
+      letter-spacing: 5px;
+      pointer-events: none;
+      opacity: 0;
+      animation: fadeIn 2s ease 2.8s forwards;
+    }
+
+    .grain {
+      position: fixed;
+      inset: 0;
+      z-index: 4;
+      pointer-events: none;
+      opacity: 0.035;
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .title .eyebrow {
+        font-size: 8px;
+        letter-spacing: 5px;
+      }
+
+      .title .sub {
+        font-size: 13px;
+      }
+
+      .controls {
+        right: 12px;
+        bottom: 12px;
+      }
+
+      .controls button {
+        padding: 9px 12px;
+        font-size: 10px;
+      }
+
+      .footer-mark {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <canvas id="scene"></canvas>
+  <div class="grain" id="grainLayer"></div>
+
+  <div class="title">
+    <span class="eyebrow">Midnight Botanica</span>
+    <h1>Blue <em>Roses</em></h1>
+    <div class="line"></div>
+    <div class="sub">a quiet bloom beneath the moonlight</div>
+  </div>
+
+  <div class="controls">
+    <button id="replayBtn">↻ Ulangi</button>
+    <button id="loopBtn">∞ Siklus</button>
+  </div>
+
+  <div class="footer-mark">BLUE ROSE · 3D CANVAS STUDY</div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      /* =========================================================
+         SETUP & UTILITIES
+      ========================================================= */
+      const canvas = document.getElementById("scene");
+      const ctx = canvas.getContext("2d");
+      const replayBtn = document.getElementById("replayBtn");
+      const loopBtn = document.getElementById("loopBtn");
+
+      const PI = Math.PI, TAU = PI * 2;
+      const clamp = (v, a = 0, b = 1) => (v < a ? a : v > b ? b : v);
+      const lerp = (a, b, t) => a + (b - a) * t;
+      const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+      const easeInOutSine = t => -(Math.cos(PI * clamp(t)) - 1) / 2;
+      const easeOutCubic = t => 1 - Math.pow(1 - clamp(t), 3);
+      const easeOutBack = t => { t = clamp(t); const c1 = 1.05, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); };
+      const norm3 = (x, y, z) => { const l = Math.hypot(x, y, z) || 1; return [x / l, y / l, z / l]; };
+
+      function makeRng(seed) {
+        return function () {
+          seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+          let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+          t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+      const rnd = makeRng(1117);
+
+      const mk = (w = 1, h = 1) => { const c = document.createElement("canvas"); c.width = w; c.height = h; return c; };
+
+      const midCv = mk(), mctx = midCv.getContext("2d");
+      const glowCv = mk(), gctx = glowCv.getContext("2d");
+      const velvetCv = mk(), velvetCtx = velvetCv.getContext("2d");
+      const bgCv = mk(), bgx = bgCv.getContext("2d");
+      const raysCv = mk(), rayx = raysCv.getContext("2d");
+      const vigCv = mk(), vgx = vigCv.getContext("2d");
+
+      // GPU-composited static film grain (avoids per-frame canvas overlay readback)
+      (() => {
+        const grainCv = mk(180, 180);
+        const g = grainCv.getContext("2d");
+        const id = g.createImageData(180, 180);
+        for (let i = 0; i < id.data.length; i += 4) {
+          const v = 128 + (Math.random() - 0.5) * 120;
+          id.data[i] = id.data[i + 1] = id.data[i + 2] = v;
+          id.data[i + 3] = 255;
+        }
+        g.putImageData(id, 0, 0);
+        const gl = document.getElementById("grainLayer");
+        if (gl && typeof grainCv.toDataURL === "function") {
+          gl.style.backgroundImage = `url(${grainCv.toDataURL()})`;
+        }
+      })();
+
+      // sprites
+      function makeBokeh(r, g, b) {
+        const c = mk(128, 128), x = c.getContext("2d");
+        const gr = x.createRadialGradient(64, 64, 0, 64, 64, 63);
+        gr.addColorStop(0, `rgba(${r},${g},${b},0.30)`);
+        gr.addColorStop(0.70, `rgba(${r},${g},${b},0.38)`);
+        gr.addColorStop(0.86, `rgba(${r},${g},${b},0.62)`);
+        gr.addColorStop(0.93, `rgba(${r},${g},${b},0.22)`);
+        gr.addColorStop(1, `rgba(${r},${g},${b},0)`);
+        x.fillStyle = gr; x.beginPath(); x.arc(64, 64, 63, 0, TAU); x.fill();
+        return c;
+      }
+      function makeSoft(r, g, b) {
+        const c = mk(64, 64), x = c.getContext("2d");
+        const gr = x.createRadialGradient(32, 32, 0, 32, 32, 32);
+        gr.addColorStop(0, `rgba(${r},${g},${b},1)`);
+        gr.addColorStop(0.18, `rgba(${r},${g},${b},0.65)`);
+        gr.addColorStop(0.5, `rgba(${r},${g},${b},0.12)`);
+        gr.addColorStop(1, `rgba(${r},${g},${b},0)`);
+        x.fillStyle = gr; x.fillRect(0, 0, 64, 64);
+        return c;
+      }
+      const BOKEH = [makeBokeh(80, 140, 255), makeBokeh(90, 205, 255), makeBokeh(150, 140, 255), makeBokeh(255, 214, 160)];
+      const SOFT = makeSoft(200, 225, 255);
+      const SOFT_GOLD = makeSoft(255, 230, 175);
+      const AURA_SPR = (() => {
+        const c = mk(128, 128), x = c.getContext("2d");
+        const g = x.createRadialGradient(64, 64, 0, 64, 64, 64);
+        g.addColorStop(0, "rgba(80,130,255,1)");
+        g.addColorStop(0.4, "rgba(40,80,210,0.45)");
+        g.addColorStop(1, "rgba(0,0,0,0)");
+        x.fillStyle = g; x.fillRect(0, 0, 128, 128);
+        return c;
+      })();
+      const DEW_SPR = (() => {
+        const c = mk(64, 64), x = c.getContext("2d");
+        const r = 16, cx = 26, cy = 24;
+        let g = x.createRadialGradient(cx + r * 0.35, cy + r * 0.5, 0, cx + r * 0.35, cy + r * 0.5, r * 1.45);
+        g.addColorStop(0, "rgba(0,4,25,0.55)"); g.addColorStop(1, "rgba(0,4,25,0)");
+        x.fillStyle = g; x.beginPath(); x.arc(cx + r * 0.35, cy + r * 0.5, r * 1.45, 0, TAU); x.fill();
+        g = x.createRadialGradient(cx - r * 0.25, cy - r * 0.3, r * 0.1, cx, cy, r);
+        g.addColorStop(0, "rgba(215,235,255,0.22)");
+        g.addColorStop(0.55, "rgba(120,170,255,0.16)");
+        g.addColorStop(0.86, "rgba(25,60,160,0.48)");
+        g.addColorStop(1, "rgba(200,228,255,0.65)");
+        x.fillStyle = g; x.beginPath(); x.arc(cx, cy, r, 0, TAU); x.fill();
+        return c;
+      })();
+      function makeMist(r, g, b) {
+        const c = mk(256, 128), x = c.getContext("2d");
+        const blobs = [[128, 66, 98, 0.24], [82, 72, 68, 0.18], [174, 70, 72, 0.18], [128, 54, 58, 0.14]];
+        for (const [bx, by, br, ba] of blobs) {
+          const gr = x.createRadialGradient(bx, by, 0, bx, by, br);
+          gr.addColorStop(0, `rgba(${r},${g},${b},${ba})`);
+          gr.addColorStop(0.5, `rgba(${r},${g},${b},${ba * 0.4})`);
+          gr.addColorStop(1, `rgba(${r},${g},${b},0)`);
+          x.fillStyle = gr;
+          x.beginPath(); x.ellipse(bx, by, br, br * 0.56, 0, 0, TAU); x.fill();
+        }
+        return c;
+      }
+      const MIST_TEX = [makeMist(34, 88, 138), makeMist(22, 68, 92)];
+
+      let W = 0, H = 0, DPR = 1, S = 0, SX = 0, CX = 0;
+
+      /* =========================================================
+         STATIC LAYERS
+      ========================================================= */
+      function buildBackground() {
+        bgCv.width = Math.round(W * DPR); bgCv.height = Math.round(H * DPR);
+        bgx.setTransform(DPR, 0, 0, DPR, 0, 0);
+        const R = Math.max(W, H);
+
+        let g = bgx.createRadialGradient(W * 0.5, H * 0.45, 0, W * 0.5, H * 0.45, R * 0.95);
+        g.addColorStop(0, "#0c1f3d");
+        g.addColorStop(0.32, "#06132a");
+        g.addColorStop(0.68, "#020915");
+        g.addColorStop(1, "#000308");
+        bgx.fillStyle = g; bgx.fillRect(0, 0, W, H);
+
+        g = bgx.createRadialGradient(W * 0.18, H * 0.04, 0, W * 0.18, H * 0.04, R * 0.8);
+        g.addColorStop(0, "rgba(130,170,255,0.22)");
+        g.addColorStop(0.35, "rgba(60,100,210,0.08)");
+        g.addColorStop(1, "rgba(0,0,0,0)");
+        bgx.fillStyle = g; bgx.fillRect(0, 0, W, H);
+
+        // out-of-focus garden (drawn tiny then upscaled = natural lens blur)
+        const sw = Math.max(2, Math.round(W / 16)), sh = Math.max(2, Math.round(H / 16));
+        const sc = mk(sw, sh), sx = sc.getContext("2d");
+        sx.scale(sw / W, sh / H);
+        const r2 = makeRng(42);
+        const m = Math.min(W, H);
+
+        for (let i = 0; i < 46; i++) {
+          const x = r2() * W, y = H * (0.6 + r2() * 0.5), rr = m * (0.08 + r2() * 0.2);
+          const gg = sx.createRadialGradient(x, y, 0, x, y, rr);
+          gg.addColorStop(0, `rgba(${(6 + r2() * 10) | 0},${(30 + r2() * 30) | 0},${(38 + r2() * 30) | 0},${0.3 + r2() * 0.35})`);
+          gg.addColorStop(1, "rgba(0,0,0,0)");
+          sx.fillStyle = gg; sx.fillRect(x - rr, y - rr, rr * 2, rr * 2);
+        }
+
+        const far = [[0.12, 0.64, 0.07], [0.87, 0.70, 0.085], [0.76, 0.50, 0.035], [0.23, 0.46, 0.03], [0.95, 0.38, 0.045], [0.04, 0.86, 0.06], [0.62, 0.84, 0.05]];
+        for (const [fx, fy, fr] of far) {
+          const x = fx * W, y = fy * H, rr = fr * m;
+          sx.strokeStyle = "rgba(10,42,32,0.65)";
+          sx.lineWidth = rr * 0.22;
+          sx.beginPath(); sx.moveTo(x, y);
+          sx.quadraticCurveTo(x + rr * 0.6, y + rr * 3, x - rr * 0.3, H + rr * 2);
+          sx.stroke();
+          const gg = sx.createRadialGradient(x, y, 0, x, y, rr * 1.6);
+          gg.addColorStop(0, "rgba(70,120,240,0.55)");
+          gg.addColorStop(0.5, "rgba(25,55,160,0.35)");
+          gg.addColorStop(1, "rgba(0,0,0,0)");
+          sx.fillStyle = gg; sx.fillRect(x - rr * 2, y - rr * 2, rr * 4, rr * 4);
+        }
+
+        const midW = Math.max(2, Math.round(W / 4)), midH = Math.max(2, Math.round(H / 4));
+        const mc = mk(midW, midH), mx = mc.getContext("2d");
+        mx.imageSmoothingQuality = "high";
+        mx.drawImage(sc, 0, 0, midW, midH);
+        bgx.imageSmoothingEnabled = true;
+        bgx.imageSmoothingQuality = "high";
+        bgx.drawImage(mc, 0, 0, W, H);
+
+        // fine stars
+        for (let i = 0; i < 120; i++) {
+          const x = r2() * W, y = r2() * H * 0.62, r = 0.3 + r2() * 0.9, a = 0.04 + r2() * 0.28;
+          bgx.fillStyle = `rgba(190,215,255,${a})`;
+          bgx.beginPath(); bgx.arc(x, y, r, 0, TAU); bgx.fill();
+        }
+      }
+
+      function buildRays() {
+        const sw = Math.max(2, Math.round(W / 10)), sh = Math.max(2, Math.round(H / 10));
+        raysCv.width = sw; raysCv.height = sh;
+        rayx.setTransform(sw / W, 0, 0, sh / H, 0, 0);
+        rayx.clearRect(0, 0, W, H);
+        const ox = W * 0.1, oy = -H * 0.2;
+        const len = Math.hypot(W, H) * 1.25;
+        const rays = [[0.78, 0.05, 0.08], [0.92, 0.03, 0.06], [1.02, 0.06, 0.09], [1.14, 0.025, 0.05], [0.68, 0.03, 0.05]];
+        for (const [ang, spread, a] of rays) {
+          rayx.beginPath(); rayx.moveTo(ox, oy);
+          rayx.lineTo(ox + Math.cos(ang - spread) * len, oy + Math.sin(ang - spread) * len);
+          rayx.lineTo(ox + Math.cos(ang + spread) * len, oy + Math.sin(ang + spread) * len);
+          rayx.closePath();
+          const g = rayx.createLinearGradient(ox, oy, ox + Math.cos(ang) * len * 0.85, oy + Math.sin(ang) * len * 0.85);
+          g.addColorStop(0, `rgba(160,195,255,${a * 1.8})`);
+          g.addColorStop(0.45, `rgba(100,145,240,${a})`);
+          g.addColorStop(1, "rgba(40,80,200,0)");
+          rayx.fillStyle = g; rayx.fill();
+        }
+      }
+
+      function buildVignette() {
+        const sw = Math.max(2, Math.round(W / 3)), sh = Math.max(2, Math.round(H / 3));
+        vigCv.width = sw; vigCv.height = sh;
+        vgx.setTransform(sw / W, 0, 0, sh / H, 0, 0);
+        const g = vgx.createRadialGradient(W / 2, H * 0.46, Math.min(W, H) * 0.2, W / 2, H * 0.5, Math.max(W, H) * 0.78);
+        g.addColorStop(0, "rgba(0,0,0,0)");
+        g.addColorStop(0.6, "rgba(0,2,8,0.35)");
+        g.addColorStop(1, "rgba(0,1,4,0.88)");
+        vgx.fillStyle = g; vgx.fillRect(0, 0, W, H);
+        const b = vgx.createLinearGradient(0, H * 0.75, 0, H);
+        b.addColorStop(0, "rgba(0,0,0,0)");
+        b.addColorStop(1, "rgba(0,2,6,0.55)");
+        vgx.fillStyle = b; vgx.fillRect(0, 0, W, H);
+      }
+
+      function resize() {
+        DPR = Math.min(window.devicePixelRatio || 1, 1.25);
+        W = window.innerWidth; H = window.innerHeight;
+        const pw = Math.round(W * DPR), ph = Math.round(H * DPR);
+        canvas.width = pw; canvas.height = ph;
+        canvas.style.width = W + "px"; canvas.style.height = H + "px";
+        midCv.width = Math.max(2, Math.round(W / 3)); midCv.height = Math.max(2, Math.round(H / 3));
+        glowCv.width = Math.max(2, Math.round(W / 9)); glowCv.height = Math.max(2, Math.round(H / 9));
+        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+        S = Math.min(W * 0.44, H * 0.42);
+        SX = Math.min(S * 0.96, W * 0.30);
+        CX = W * 0.5;
+        let maxPad = 64;
+        for (const rose of ROSES) {
+          const pad = Math.max(4, Math.ceil(S * rose.scale * 0.90));
+          const rpw = pad * 2;
+          rose.pad = pad;
+          rose.rpw = rpw;
+          rose.cv.width = rpw;
+          rose.cv.height = rpw;
+          rose.ctx.setTransform(1, 0, 0, 1, 0, 0);
+          rose.ctx.imageSmoothingEnabled = true;
+          rose.hasCache = false;
+          if (pad > maxPad) maxPad = pad;
+        }
+        const vpw = Math.max(8, maxPad * 2);
+        velvetCv.width = vpw;
+        velvetCv.height = vpw;
+        velvetCtx.imageSmoothingEnabled = true;
+        buildBackground(); buildRays(); buildVignette();
+      }
+
+      /* =========================================================
+         3D ROSE MODEL (5-ROSE BOUQUET CHOREOGRAPHY)
+      ========================================================= */
+      const GOLD = PI * (3 - Math.sqrt(5));
+      const DEW_SPEC_HERO = [[1, 0.54, 0.18, 0.021], [2, 0.62, -0.28, 0.017], [4, 0.48, 0.12, 0.014], [6, 0.58, 0.30, 0.018], [7, 0.46, -0.14, 0.013], [9, 0.56, 0.04, 0.015], [3, 0.66, -0.06, 0.012], [12, 0.52, 0.24, 0.012]];
+      const DEW_SPEC_SIDE = [[1, 0.55, 0.16, 0.022], [3, 0.60, -0.24, 0.018], [5, 0.48, 0.12, 0.015], [8, 0.54, -0.08, 0.014]];
+
+      function createRoseModel(seedVal, isHero) {
+        const rr = makeRng(seedVal);
+        const np = isHero ? 22 : 18;
+        const arr = [];
+        for (let i = 0; i < 5; i++) {
+          arr.push({
+            kind: 1, t: 1,
+            theta: i * TAU / 5 + 0.35 + (rr() - 0.5) * 0.2,
+            len: 0.42 * (0.9 + rr() * 0.2),
+            wr: 0.17,
+            r0: 0.105, z0: -0.078,
+            seed: rr() * 100, hue: 0, j1: 0, j2: 0,
+            U: isHero ? 7 : 6,
+            V: 4
+          });
+        }
+        for (let k = 0; k < np; k++) {
+          const t = k / (np - 1);
+          arr.push({
+            kind: 0, t,
+            theta: k * GOLD + (rr() - 0.5) * 0.20,
+            len: lerp(0.24, 0.65, Math.pow(t, 0.78)) * (0.94 + rr() * 0.12),
+            wr: lerp(0.28, 0.53, t) * (0.92 + rr() * 0.16),
+            r0: lerp(0.008, 0.105, Math.pow(t, 0.92)),
+            z0: lerp(0.065, -0.035, t),
+            seed: rr() * 100,
+            hue: (rr() - 0.5) * 0.45,
+            j1: rr() - 0.5, j2: rr() - 0.5,
+            start: 0.06 + (1 - t) * 0.58,
+            U: isHero ? (t > 0.32 ? 14 : 10) : (t > 0.32 ? 11 : 8),
+            V: isHero ? (t > 0.32 ? 10 : 8) : (t > 0.32 ? 8 : 6),
+            dew: null
+          });
+        }
+        const spec = isHero ? DEW_SPEC_HERO : DEW_SPEC_SIDE;
+        for (const [back, u, v, r] of spec) {
+          const p = arr[arr.length - back];
+          if (p) (p.dew || (p.dew = [])).push({ u, v, r });
+        }
+        return arr;
+      }
+
+      // Sorted back-to-front by depth for true 3D occlusion across stems and petals
+      const ROSES = [
+        {
+          id: 1, isHero: false, depth: 0.72,
+          dx: -0.96, dy: -0.26, scale: 0.84,
+          lean: -0.22, pitch: -0.06, spinOff: 0.9,
+          bxOff: -0.14, seedOffset: 11.3,
+          stemStart: 1.6, bloomStart: 4.5, bloomDur: 13.0,
+          tint: [0.88, 1.12, 1.04],
+          parts: createRoseModel(2309, false),
+          thorns: [[0.24, -1], [0.46, 1], [0.70, -1]],
+          leaves: [{ t: 0.56, side: -1, ang: PI + 0.34, sz: 0.78, delay: 2.5 }]
+        },
+        {
+          id: 2, isHero: false, depth: 0.76,
+          dx: 0.94, dy: -0.21, scale: 0.86,
+          lean: 0.22, pitch: -0.04, spinOff: 2.1,
+          bxOff: 0.10, seedOffset: 24.7,
+          stemStart: 2.8, bloomStart: 6.2, bloomDur: 13.0,
+          tint: [1.16, 0.96, 1.06],
+          parts: createRoseModel(4177, false),
+          thorns: [[0.22, 1], [0.48, -1], [0.74, 1]],
+          leaves: [{ t: 0.54, side: 1, ang: -0.36, sz: 0.79, delay: 3.7 }]
+        },
+        {
+          id: 3, isHero: false, depth: 0.90,
+          dx: -1.16, dy: 0.42, scale: 0.78,
+          lean: -0.30, pitch: 0.08, spinOff: 3.6,
+          bxOff: -0.22, seedOffset: 37.1,
+          stemStart: 4.2, bloomStart: 8.6, bloomDur: 13.0,
+          tint: [0.92, 0.94, 1.08],
+          parts: createRoseModel(6803, false),
+          thorns: [[0.28, -1], [0.55, 1], [0.78, -1]],
+          leaves: [{ t: 0.46, side: -1, ang: PI + 0.48, sz: 0.76, delay: 5.1 }]
+        },
+        {
+          id: 4, isHero: false, depth: 0.92,
+          dx: 1.14, dy: 0.45, scale: 0.80,
+          lean: 0.28, pitch: 0.07, spinOff: 4.9,
+          bxOff: 0.18, seedOffset: 51.9,
+          stemStart: 5.4, bloomStart: 10.5, bloomDur: 13.0,
+          tint: [0.96, 1.08, 1.02],
+          parts: createRoseModel(9041, false),
+          thorns: [[0.26, 1], [0.54, -1], [0.76, 1]],
+          leaves: [{ t: 0.45, side: 1, ang: -0.46, sz: 0.76, delay: 6.3 }]
+        },
+        {
+          id: 0, isHero: true, depth: 1.00,
+          dx: 0.0, dy: 0.04, scale: 1.08,
+          lean: 0.0, pitch: 0.02, spinOff: 0.0,
+          bxOff: -0.04, seedOffset: 0.0,
+          stemStart: 0.0, bloomStart: 2.0, bloomDur: 13.5,
+          tint: [1.0, 1.0, 1.0],
+          parts: createRoseModel(1117, true),
+          thorns: [[0.20, 1], [0.36, -1], [0.53, 1], [0.70, -1], [0.86, 1]],
+          leaves: [
+            { t: 0.66, side: 1, ang: -0.44, sz: 0.84, delay: 1.5 },
+            { t: 0.44, side: -1, ang: PI + 0.38, sz: 0.88, delay: 1.0 }
+          ]
+        }
+      ];
+
+      for (const rose of ROSES) {
+        rose.cv = mk();
+        rose.ctx = rose.cv.getContext("2d");
+        rose.pad = 64;
+        rose.rpw = 128;
+        rose.hasCache = false;
+        rose.cacheP = 0;
+        rose.cacheWy = 0;
+        rose.cacheWx = 0;
+        rose.cacheSpin = 0;
+      }
+
+      // Lossless 24-bit color string cache (full 8-bit per channel, zero posterization)
+      const LUT_MASK = 65535;
+      const lutK = new Int32Array(65536).fill(-1);
+      const lutV = new Array(65536);
+      function rgbCss(r8, g8, b8) {
+        const key = (r8 << 16) | (g8 << 8) | b8;
+        const slot = ((key * 2654435761) >>> 16) & LUT_MASK;
+        if (lutK[slot] !== key) {
+          lutK[slot] = key;
+          lutV[slot] = "rgb(" + r8 + "," + g8 + "," + b8 + ")";
+        }
+        return lutV[slot];
+      }
+
+      const PAL_P = { d: [0.004, 0.010, 0.085], m: [0.016, 0.075, 0.48], l: [0.085, 0.275, 0.88], b: [0.055, 0.165, 0.56], t: [0.045, 0.20, 0.82], s: [0.22, 0.48, 1.00] };
+      const PAL_S = { d: [0.012, 0.038, 0.020], m: [0.055, 0.165, 0.075], l: [0.15, 0.31, 0.14], b: [0.11, 0.21, 0.11], t: [0.10, 0.30, 0.08], s: [0.14, 0.28, 0.22] };
+
+      const LK = norm3(-0.55, -0.45, 0.72);   // key (moon) light
+      const LF = norm3(0.75, -0.55, 0.25);    // soft fill
+      const fwLight = { lx: 0, ly: -0.5, lz: 0.85, r: 0, g: 0, b: 0 };
+
+      const cam = { cb: 1, sb: 0, cwx: 1, swx: 0, cwy: 1, swy: 0, hx: 0, hy: 0, sc: 1, spin: 0, Cy: -1, Cz: 0, HK: [0, 0, 1] };
+
+      const K = 36;
+      const spine = new Float32Array((K + 1) * 3);
+      const VB = new Float32Array(34 * 26 * 6);
+      const TMP = new Float32Array(18);
+      const TMP2 = new Float32Array(6);
+
+      const MAXQ = 16000;
+      const qPts = new Float32Array(MAXQ * 8);
+      const qDepth = new Float32Array(MAXQ);
+      const qCol = new Array(MAXQ);
+      const qCKey = new Uint8Array(MAXQ);
+      const qOrder = new Uint32Array(MAXQ);
+      const qKeys = new Uint16Array(MAXQ);
+      const qTmpOrd = new Uint32Array(MAXQ);
+      const RADIX_C = new Int32Array(256);
+      let qCount = 0;
+      const dewPts = new Float32Array(64);
+      let dewCount = 0;
+
+      function petalWidth(s) { const a = s < 0.7 ? s / 0.7 : 1; return 0.2 + 0.8 * Math.pow(Math.sin(a * PI / 2), 0.8); }
+      function sepalWidth(s) { const a = Math.min(s / 0.35, 1); return (0.4 + 0.6 * Math.sin(a * PI / 2)) * Math.pow(Math.max(0, 1 - s), 0.75); }
+
+      function partParams(pt, o, time) {
+        const t = pt.t;
+        if (pt.kind === 1) {
+          return {
+            phi0: lerp(0.45, 1.75, o) + Math.sin(time * 0.001 + pt.seed) * 0.02 * o,
+            curl: lerp(-0.85, 0.6, o),
+            aB: lerp(1.0, 0.55, o), aT: lerp(0.8, 0.25, o), ruffle: 0
+          };
+        }
+        const fl = Math.sin(time * 0.0011 + pt.seed) * 0.018 * o;
+        const tp = Math.pow(t, 1.35);
+        return {
+          phi0: lerp(lerp(0.30, 0.40, t), lerp(0.26, 1.24, tp) + pt.j1 * 0.12 * t, o) + fl,
+          curl: lerp(lerp(-0.62, -0.80, t), lerp(-0.45, 0.72, Math.pow(t, 1.6)) + pt.j2 * 0.16 * t, o) + fl * 1.5,
+          aB: lerp(lerp(1.65, 1.05, t), lerp(1.55, 0.6, t), o),
+          aT: lerp(lerp(1.45, 0.95, t), lerp(1.35, -0.5, Math.pow(t, 1.25)), o),
+          ruffle: o
+        };
+      }
+
+      function buildSpine(par, L, r0, z0) {
+        let r = r0, z = z0;
+        const ds = 1 / K;
+        for (let i = 0; i <= K; i++) {
+          const s = i / K, b = i * 3;
+          spine[b] = r; spine[b + 1] = z; spine[b + 2] = par.phi0 + par.curl * s * s;
+          const sm = (i + 0.5) * ds, pm = par.phi0 + par.curl * sm * sm;
+          r += Math.sin(pm) * L * ds;
+          z += Math.cos(pm) * L * ds;
+        }
+      }
+
+      function transform(X, Y, Z, out, o) {
+        const x1 = X * cam.cwy + Z * cam.swy;
+        const z1 = -X * cam.swy + Z * cam.cwy;
+        const y2 = Y * cam.cwx - z1 * cam.swx;
+        const z2 = Y * cam.swx + z1 * cam.cwx;
+        out[o] = x1; out[o + 1] = y2; out[o + 2] = z2;
+        out[o + 3] = cam.hx + x1 * cam.sc;
+        out[o + 4] = cam.hy - (z2 * cam.cb + y2 * cam.sb) * cam.sc;
+        out[o + 5] = -y2 * cam.cb + z2 * cam.sb;
+      }
+
+      function petalPoint(pt, par, L, hwBase, u, v, time, out, o) {
+        const sepal = pt.kind === 1;
+        const Lv = sepal ? 1 : 1 - 0.24 * v * v - 0.035 * Math.exp(-40 * v * v);
+        const s = clamp(u * Lv);
+        const fi = s * K;
+        let i0 = fi | 0; if (i0 >= K) i0 = K - 1;
+        const fr = fi - i0, b0 = i0 * 3, b1 = b0 + 3;
+        const r = spine[b0] + (spine[b1] - spine[b0]) * fr;
+        const z = spine[b0 + 1] + (spine[b1 + 1] - spine[b0 + 1]) * fr;
+        const phi = spine[b0 + 2] + (spine[b1 + 2] - spine[b0 + 2]) * fr;
+        const hw = hwBase * (sepal ? sepalWidth(s) : petalWidth(s));
+        const a = par.aB + (par.aT - par.aB) * smooth(0.3, 1, s);
+        const ang = v * a;
+        let x, d;
+        if (Math.abs(a) > 1e-3) { const Rc = hw / a; x = Rc * Math.sin(ang); d = Rc * (1 - Math.cos(ang)); }
+        else { x = hw * v; d = 0; }
+        if (!sepal) {
+          const quill = Math.exp(-4.5 * v * v) * smooth(0.55, 1.0, s) * pt.t * par.ruffle;
+          d -= quill * L * 0.028;
+          d += par.ruffle * L * (0.020 * Math.sin(v * 4.2 + pt.seed + time * 0.0007) + 0.008 * Math.cos(v * 7.5 - pt.seed * 1.7)) * s * s * s;
+        }
+        const radial = r - d * Math.cos(phi);
+        const zz = z + d * Math.sin(phi);
+        transform(radial * par.ct - x * par.st, radial * par.st + x * par.ct, zz, out, o);
+      }
+
+      function pushQuad(ax, ay, bx, by, cx, cy, dx, dy, depth, col, cKey) {
+        if (qCount >= MAXQ) return;
+        const mx = (ax + bx + cx + dx) * 0.25, my = (ay + by + cy + dy) * 0.25;
+        const o = qCount * 8, E = 0.68;
+        let rx, ry, l;
+        rx = ax - mx; ry = ay - my; l = Math.sqrt(rx * rx + ry * ry) || 1; qPts[o] = ax + rx / l * E; qPts[o + 1] = ay + ry / l * E;
+        rx = bx - mx; ry = by - my; l = Math.sqrt(rx * rx + ry * ry) || 1; qPts[o + 2] = bx + rx / l * E; qPts[o + 3] = by + ry / l * E;
+        rx = cx - mx; ry = cy - my; l = Math.sqrt(rx * rx + ry * ry) || 1; qPts[o + 4] = cx + rx / l * E; qPts[o + 5] = cy + ry / l * E;
+        rx = dx - mx; ry = dy - my; l = Math.sqrt(rx * rx + ry * ry) || 1; qPts[o + 6] = dx + rx / l * E; qPts[o + 7] = dy + ry / l * E;
+        qDepth[qCount] = depth; qCol[qCount] = col; qCKey[qCount] = cKey; qCount++;
+      }
+
+      function pushDew(x, y, r, a) {
+        if (dewCount >= 16) return;
+        const o = dewCount * 4;
+        dewPts[o] = x; dewPts[o + 1] = y; dewPts[o + 2] = r; dewPts[o + 3] = a;
+        dewCount++;
+      }
+
+      function renderPart(pt, o, time, dewA, tint) {
+        const par = partParams(pt, o, time);
+        const th = pt.theta + cam.spin;
+        par.ct = Math.cos(th); par.st = Math.sin(th);
+        const L = pt.len, hwB = pt.len * pt.wr;
+        buildSpine(par, L, pt.r0, pt.z0);
+
+        const sepal = pt.kind === 1;
+        const U = pt.U, V = pt.V, st = V + 1;
+        for (let i = 0; i <= U; i++) {
+          const tU = i / U;
+          const u = sepal ? tU : (1 - Math.pow(1 - tU, 1.28));
+          for (let j = 0; j <= V; j++) petalPoint(pt, par, L, hwB, u, -1 + 2 * j / V, time, VB, (i * st + j) * 6);
+        }
+
+        const pal = sepal ? PAL_S : PAL_P;
+        const aoP = sepal ? 0.85 : lerp(0.16, 1.0, Math.pow(clamp(pt.t * 0.80 + o * 0.30), 1.35));
+        const Cy = cam.Cy, Cz = cam.Cz, HK = cam.HK;
+
+        for (let i = 0; i < U; i++) {
+          const tUm = (i + 0.5) / U;
+          const u = sepal ? tUm : (1 - Math.pow(1 - tUm, 1.28));
+          for (let j = 0; j < V; j++) {
+            const a = (i * st + j) * 6, b = a + st * 6, c = b + 6, d = a + 6;
+            const e1x = VB[c] - VB[a], e1y = VB[c + 1] - VB[a + 1], e1z = VB[c + 2] - VB[a + 2];
+            const e2x = VB[d] - VB[b], e2y = VB[d + 1] - VB[b + 1], e2z = VB[d + 2] - VB[b + 2];
+            let nx = e1y * e2z - e1z * e2y, ny = e1z * e2x - e1x * e2z, nz = e1x * e2y - e1y * e2x;
+            const nl = Math.sqrt(nx * nx + ny * ny + nz * nz);
+            if (nl < 1e-12) continue;
+            nx /= nl; ny /= nl; nz /= nl;
+            let vd = ny * Cy + nz * Cz, back = false;
+            if (vd < 0) { nx = -nx; ny = -ny; nz = -nz; vd = -vd; back = true; }
+
+            const v = -1 + 2 * (j + 0.5) / V;
+            const s = sepal ? u : u * (1 - 0.24 * v * v);
+            if (!sepal) {
+              const e2l = Math.sqrt(e2x * e2x + e2y * e2y + e2z * e2z) || 1;
+              const vein = Math.sin(v * 5.0 + pt.seed * 2.3 + s * 2.0) * 0.012 * smooth(0.15, 0.85, s);
+              nx += vein * (e2x / e2l);
+              ny += vein * (e2y / e2l);
+              nz += vein * (e2z / e2l);
+              const nl2 = Math.sqrt(nx * nx + ny * ny + nz * nz) || 1;
+              nx /= nl2; ny /= nl2; nz /= nl2;
+            }
+
+            // rich deep sapphire C2 albedo across full petal length
+            const s1 = clamp(s);
+            const s2 = smooth(0.0, 0.58, s1);
+            const s3 = smooth(0.42, 0.96, s1);
+            const c0r = lerp(pal.d[0], pal.m[0], s2), c0g = lerp(pal.d[1], pal.m[1], s2), c0b = lerp(pal.d[2], pal.m[2], s2);
+            const lmix = s3 * (0.78 + s1 * 0.22);
+            let ar = lerp(c0r, pal.l[0], lmix);
+            let ag = lerp(c0g, pal.l[1], lmix);
+            let ab = lerp(c0b, pal.l[2], lmix);
+            if (!sepal) {
+              const str = 1 - 0.012 * (0.5 + 0.5 * Math.sin(v * 5.5 + pt.seed * 2.1 + s * 1.8)) * smooth(0.15, 0.85, s1);
+              ar *= str * (1 + pt.hue * 0.42) * tint[0];
+              ag *= str * (1 - pt.hue * 0.10) * tint[1];
+              ab *= str * tint[2];
+              const lip = smooth(0.80, 1.0, u) * (0.55 + 0.45 * Math.exp(-5 * v * v));
+              const ef = smooth(0.84, 1, Math.abs(v)) * 0.26 + lip * 0.45;
+              ar += ef * 0.042; ag += ef * 0.095; ab += ef * 0.16;
+            }
+            if (back) { ar = ar * 0.70 + pal.b[0] * 0.30; ag = ag * 0.70 + pal.b[1] * 0.30; ab = ab * 0.70 + pal.b[2] * 0.30; }
+
+            // lighting (deep velvety shadow pockets + moonlit cobalt rim sheen + firework rim)
+            const aoS = smooth(0, sepal ? 0.35 : 0.68, s1);
+            const ao = (0.12 + 0.88 * aoS * Math.sqrt(0.25 + 0.75 * aoS)) * aoP;
+            const ndl = nx * LK[0] + ny * LK[1] + nz * LK[2];
+            const diffB = clamp((ndl + 0.32) / 1.32);
+            const diff = diffB * (0.85 + 0.15 * diffB);
+            const ndf = nx * LF[0] + ny * LF[1] + nz * LF[2];
+            const fill = clamp((ndf + 0.25) / 1.25) * 0.20;
+            const trB = clamp(-ndl * 0.85 + 0.15);
+            const tr = trB * Math.sqrt(trB) * 0.46 * (0.28 + 0.72 * s1);
+            const fres = 1 - vd;
+            const sh = fres * fres * Math.sqrt(fres) * (back ? 0.64 : 0.46) * (0.42 + 0.58 * s1);
+            const nh = nx * HK[0] + ny * HK[1] + nz * HK[2];
+            let sp = 0;
+            if (nh > 0) {
+              const n2 = nh * nh, n4 = n2 * n2, n8 = n4 * n4, n16 = n8 * n8;
+              sp = n16 * n16 * n4 * (sepal ? 0.12 : 0.18) * (0.35 + 0.65 * s1);
+            }
+            const lit = 0.045 + diff * 0.955 + fill;
+            const ao2 = 0.25 + 0.75 * ao;
+
+            const ndfw = clamp((nx * fwLight.lx + ny * fwLight.ly + nz * fwLight.lz + 0.35) / 1.35);
+            const fwDiff = ndfw * (0.35 + 0.65 * s1) * ao;
+
+            const R = ar * lit * ao + pal.t[0] * tr * ao + pal.s[0] * sh * ao2 + sp * (sepal ? 1.0 : 0.65) * ao + ar * fwLight.r * fwDiff + fwLight.r * sh * 0.28 * ao2;
+            const G = ag * lit * ao + pal.t[1] * tr * ao + pal.s[1] * sh * ao2 + sp * (sepal ? 1.0 : 0.84) * ao + ag * fwLight.g * fwDiff + fwLight.g * sh * 0.28 * ao2;
+            const B = ab * lit * ao + pal.t[2] * tr * ao + pal.s[2] * sh * ao2 + sp * ao + ab * fwLight.b * fwDiff + fwLight.b * sh * 0.28 * ao2;
+
+            const tr8 = R > 0 ? R * 2.02 : 0;
+            const tg8 = G > 0 ? G * 2.02 : 0;
+            const tb8 = B > 0 ? B * 2.02 : 0;
+            const r8 = ((255 * (1 - 1 / (1 + tr8 + 0.5 * tr8 * tr8 + 0.1667 * tr8 * tr8 * tr8))) | 0) & 0xF8;
+            const g8 = ((255 * (1 - 1 / (1 + tg8 + 0.5 * tg8 * tg8 + 0.1667 * tg8 * tg8 * tg8))) | 0) & 0xF8;
+            const b8 = ((255 * (1 - 1 / (1 + tb8 + 0.5 * tb8 * tb8 + 0.1667 * tb8 * tb8 * tb8))) | 0) & 0xF8;
+            const cKey = (((r8 >> 3) * 37 + (g8 >> 3) * 13 + (b8 >> 3)) & 127);
+
+            pushQuad(
+              VB[a + 3], VB[a + 4], VB[b + 3], VB[b + 4], VB[c + 3], VB[c + 4], VB[d + 3], VB[d + 4],
+              (VB[a + 5] + VB[b + 5] + VB[c + 5] + VB[d + 5]) * 0.25,
+              rgbCss(r8, g8, b8),
+              cKey
+            );
+          }
+        }
+
+        // dew drops
+        if (pt.dew && dewA > 0.001) {
+          for (const dw of pt.dew) {
+            petalPoint(pt, par, L, hwB, dw.u, dw.v, time, TMP, 0);
+            petalPoint(pt, par, L, hwB, dw.u + 0.03, dw.v, time, TMP, 6);
+            petalPoint(pt, par, L, hwB, dw.u, dw.v + 0.05, time, TMP, 12);
+            const e1x = TMP[6] - TMP[0], e1y = TMP[7] - TMP[1], e1z = TMP[8] - TMP[2];
+            const e2x = TMP[12] - TMP[0], e2y = TMP[13] - TMP[1], e2z = TMP[14] - TMP[2];
+            const ny = e1z * e2x - e1x * e2z, nz = e1x * e2y - e1y * e2x, nx = e1y * e2z - e1z * e2y;
+            const nl = Math.hypot(nx, ny, nz) || 1;
+            const vd = (ny * Cy + nz * Cz) / nl;
+            if (vd < 0.2) continue;
+            pushDew(TMP[3], TMP[4], dw.r * cam.sc, dewA * smooth(0.2, 0.5, vd));
+          }
+        }
+      }
+
+      function drawDew(c, x, y, r, a, time = 0) {
+        c.save();
+        c.globalAlpha = a;
+        const ds = r * 4;
+        c.drawImage(DEW_SPR, x - r * 1.625, y - r * 1.5, ds, ds);
+
+        const fwMag = Math.min(1, fwLight.r + fwLight.g + fwLight.b);
+        const cr = (190 + fwLight.r * 90) | 0, cg = (230 + fwLight.g * 45) | 0, cb = (255) | 0;
+        c.fillStyle = `rgba(${cr},${cg},${cb},${0.38 + fwMag * 0.25})`;
+        c.beginPath(); c.ellipse(x + r * 0.18, y + r * 0.48, r * 0.46, r * 0.2, -0.25, 0, TAU); c.fill();
+        c.fillStyle = "rgba(255,255,255,0.95)";
+        c.beginPath(); c.ellipse(x - r * 0.36, y - r * 0.38, r * 0.22, r * 0.13, -0.65, 0, TAU); c.fill();
+        c.fillStyle = "rgba(255,255,255,0.65)";
+        c.beginPath(); c.arc(x - r * 0.05, y - r * 0.55, r * 0.06, 0, TAU); c.fill();
+
+        // Delicate 4-point star glint on moonlit/firework-lit drops
+        const glint = Math.pow(0.5 + 0.5 * Math.sin(time * 0.0024 + x * 0.07), 4) * 0.55 + fwMag * 0.45;
+        if (glint > 0.22) {
+          const gx = x - r * 0.36, gy = y - r * 0.38, gr = r * (0.48 + glint * 0.55);
+          c.strokeStyle = `rgba(255,255,255,${glint * 0.65})`;
+          c.lineWidth = Math.max(0.45, r * 0.1);
+          c.beginPath();
+          c.moveTo(gx - gr, gy); c.lineTo(gx + gr, gy);
+          c.moveTo(gx, gy - gr); c.lineTo(gx, gy + gr);
+          c.stroke();
+        }
+        c.restore();
+      }
+
+      function renderRose(time, p, rose) {
+        qCount = 0;
+        dewCount = 0;
+        const shx = cam.hx, shy = cam.hy, ssc = cam.sc;
+        cam.hx = rose.pad;
+        cam.hy = rose.pad;
+        cam.sc = S * rose.scale;
+
+        const dewA = smooth(0.82, 0.97, p);
+        for (const pt of rose.parts) {
+          const o = pt.kind === 1 ? smooth(0.0, 0.3, p) : smooth(pt.start, pt.start + 0.42, p);
+          renderPart(pt, o, time, dewA, rose.tint);
+        }
+
+        cam.hx = shx;
+        cam.hy = shy;
+        cam.sc = ssc;
+
+        // O(N) 2-pass 8-bit radix sort on 9-bit depth slice [-1..+1] + 7-bit color hash
+        for (let i = 0; i < qCount; i++) {
+          const z9 = clamp(((qDepth[i] + 1.0) * 255.5) | 0, 0, 511);
+          qKeys[i] = (z9 << 7) | qCKey[i];
+        }
+        RADIX_C.fill(0);
+        for (let i = 0; i < qCount; i++) RADIX_C[qKeys[i] & 255]++;
+        let sum = 0;
+        for (let b = 0; b < 256; b++) { const c = RADIX_C[b]; RADIX_C[b] = sum; sum += c; }
+        for (let i = 0; i < qCount; i++) { qTmpOrd[RADIX_C[qKeys[i] & 255]++] = i; }
+
+        RADIX_C.fill(0);
+        for (let i = 0; i < qCount; i++) RADIX_C[(qKeys[i] >>> 8) & 255]++;
+        sum = 0;
+        for (let b = 0; b < 256; b++) { const c = RADIX_C[b]; RADIX_C[b] = sum; sum += c; }
+        for (let i = 0; i < qCount; i++) {
+          const idx = qTmpOrd[i];
+          qOrder[RADIX_C[(qKeys[idx] >>> 8) & 255]++] = idx;
+        }
+
+        const rc = rose.ctx;
+        rc.clearRect(0, 0, rose.pad * 2, rose.pad * 2);
+        let curCol = null, pathOpen = false;
+        for (let n = 0; n < qCount; n++) {
+          const q = qOrder[n], o = q * 8;
+          const col = qCol[q];
+          if (col !== curCol) {
+            if (pathOpen) rc.fill();
+            curCol = col;
+            rc.fillStyle = col;
+            rc.beginPath();
+            pathOpen = true;
+          }
+          rc.moveTo(qPts[o], qPts[o + 1]);
+          rc.lineTo(qPts[o + 2], qPts[o + 3]);
+          rc.lineTo(qPts[o + 4], qPts[o + 5]);
+          rc.lineTo(qPts[o + 6], qPts[o + 7]);
+        }
+        if (pathOpen) rc.fill();
+
+        // 2-Stage hardware bilinear velvet anti-facet pass (melts micro-quads while keeping silhouette sharp)
+        const dprW = rose.rpw;
+        const vW1 = Math.max(4, (dprW * 0.46) | 0);
+        const vW2 = Math.max(4, (dprW * 0.24) | 0);
+        const yOff2 = vW1 + 2;
+        velvetCtx.clearRect(0, 0, vW1 + 2, yOff2 + vW2 + 2);
+        velvetCtx.drawImage(rose.cv, 0, 0, dprW, dprW, 0, 0, vW1, vW1);
+        velvetCtx.drawImage(velvetCv, 0, 0, vW1, vW1, 0, yOff2, vW2, vW2);
+        rc.save();
+        rc.globalCompositeOperation = "source-atop";
+        rc.globalAlpha = 0.42;
+        rc.drawImage(velvetCv, 0, 0, vW1, vW1, 0, 0, dprW, dprW);
+        rc.globalAlpha = 0.26;
+        rc.drawImage(velvetCv, 0, yOff2, vW2, vW2, 0, 0, dprW, dprW);
+        rc.restore();
+
+        // Crisp dewdrops rendered on top of velvety petals
+        for (let d = 0; d < dewCount; d++) {
+          const o = d * 4;
+          drawDew(rc, dewPts[o], dewPts[o + 1], dewPts[o + 2], dewPts[o + 3], time);
+        }
+        rose.hasCache = true;
+      }
+
+      /* =========================================================
+         STEM, THORNS & LEAVES (2D, painterly shading)
+      ========================================================= */
+      const STEM_N = 34;
+      const STEM = new Float32Array((STEM_N + 1) * 2);
+      const THORNS = [[0.2, 1], [0.36, -1], [0.53, 1], [0.7, -1], [0.86, 1]];
+
+      const RECEP_SPR = (() => {
+        const c = mk(64, 64), x = c.getContext("2d");
+        const g = x.createRadialGradient(22, 22, 0, 32, 32, 30);
+        g.addColorStop(0, "#4b8655"); g.addColorStop(0.5, "#1f4a2c"); g.addColorStop(1, "#08190f");
+        x.fillStyle = g;
+        x.beginPath(); x.arc(32, 32, 28, 0, TAU); x.fill();
+        return c;
+      })();
+
+      function strokeStemBezier(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y, off, lw, col) {
+        ctx.beginPath();
+        ctx.moveTo(p0x + off, p0y);
+        ctx.bezierCurveTo(p1x + off, p1y, p2x + off, p2y, p3x + off, p3y);
+        ctx.lineWidth = lw; ctx.strokeStyle = col; ctx.stroke();
+      }
+
+      const LEAF_CACHE = {};
+      const LEAF_SCALE = 1100, LEAF_OX = 6, LEAF_OY = 110;
+      function getLeafSprite(len, wid) {
+        const key = len + "_" + wid;
+        if (LEAF_CACHE[key]) return LEAF_CACHE[key];
+        const lc = mk(256, 220), c = lc.getContext("2d");
+        c.translate(LEAF_OX, LEAF_OY);
+        c.scale(LEAF_SCALE, LEAF_SCALE);
+
+        const M = 30;
+        const wAt = a => wid * Math.pow(Math.sin(PI * Math.pow(clamp(a), 0.72)), 0.85);
+        const midY = a => wid * 0.14 * Math.sin(a * PI * 1.15 - 0.2);
+
+        c.beginPath(); c.moveTo(0, 0);
+        for (let k = 1; k <= M; k++) {
+          const a = k / M, tooth = (k % 2 === 1 && a > 0.10 && a < 0.94);
+          const my = midY(a);
+          c.lineTo(a * len + (tooth ? len * 0.011 : 0), my - wAt(a) * 1.04 * (tooth ? 1.075 : 1));
+        }
+        for (let k = M - 1; k >= 1; k--) {
+          const a = k / M, tooth = (k % 2 === 1 && a > 0.10 && a < 0.94);
+          const my = midY(a);
+          c.lineTo(a * len + (tooth ? len * 0.011 : 0), my + wAt(a) * 0.94 * (tooth ? 1.075 : 1));
+        }
+        c.closePath();
+
+        const g = c.createLinearGradient(0, -wid * 1.05, len * 0.3, wid);
+        g.addColorStop(0, "#103224");
+        g.addColorStop(0.28, "#29694b");
+        g.addColorStop(0.49, "#1c5036");
+        g.addColorStop(0.54, "#0d2c1e");
+        g.addColorStop(0.85, "#071b14");
+        g.addColorStop(1, "#040f0c");
+        c.fillStyle = g; c.fill();
+
+        const h = c.createRadialGradient(len * 0.36, -wid * 0.42, 0, len * 0.38, -wid * 0.32, len * 0.65);
+        h.addColorStop(0, "rgba(155,215,255,0.22)");
+        h.addColorStop(0.45, "rgba(110,190,235,0.08)");
+        h.addColorStop(1, "rgba(110,190,235,0)");
+        c.fillStyle = h; c.fill();
+
+        const gloss = c.createLinearGradient(len * 0.1, -wid * 0.85, len * 0.85, -wid * 0.1);
+        gloss.addColorStop(0, "rgba(210,235,255,0)");
+        gloss.addColorStop(0.45, "rgba(190,230,255,0.12)");
+        gloss.addColorStop(1, "rgba(210,235,255,0)");
+        c.fillStyle = gloss; c.fill();
+
+        c.strokeStyle = "rgba(150,210,255,0.18)"; c.lineWidth = 0.0022; c.stroke();
+
+        // S-curved midrib
+        c.beginPath(); c.moveTo(0, 0);
+        for (let k = 1; k <= 16; k++) {
+          const a = k / 16 * 0.97;
+          c.lineTo(a * len, midY(a));
+        }
+        c.strokeStyle = "rgba(175,230,195,0.34)"; c.lineWidth = 0.0036; c.stroke();
+
+        // Tapered lateral veins & fine secondary branches
+        c.beginPath();
+        for (let a = 0.13; a < 0.86; a += 0.085) {
+          const y0 = midY(a);
+          const yt = midY(a + 0.12);
+          const w = wAt(a + 0.10) * 0.84;
+          c.moveTo(a * len, y0);
+          c.quadraticCurveTo((a + 0.05) * len, y0 - w * 0.44, (a + 0.13) * len, yt - w);
+          c.moveTo(a * len, y0);
+          c.quadraticCurveTo((a + 0.05) * len, y0 + w * 0.44, (a + 0.13) * len, yt + w * 0.92);
+          c.moveTo((a + 0.07) * len, y0 - w * 0.48);
+          c.lineTo((a + 0.12) * len, yt - w * 0.62);
+          c.moveTo((a + 0.07) * len, y0 + w * 0.46);
+          c.lineTo((a + 0.12) * len, yt + w * 0.58);
+        }
+        c.strokeStyle = "rgba(150,220,180,0.14)"; c.lineWidth = 0.0018; c.stroke();
+
+        return (LEAF_CACHE[key] = lc);
+      }
+
+      function drawLeaflet(len, wid) {
+        const spr = getLeafSprite(len, wid);
+        ctx.drawImage(spr, -LEAF_OX / LEAF_SCALE, -LEAF_OY / LEAF_SCALE, 256 / LEAF_SCALE, 220 / LEAF_SCALE);
+      }
+
+      function drawLeafDew(x, y, r, time) {
+        ctx.fillStyle = "rgba(0,10,8,0.42)";
+        ctx.beginPath(); ctx.arc(x + r * 0.28, y + r * 0.42, r * 1.15, 0, TAU); ctx.fill();
+
+        ctx.fillStyle = "rgba(95,185,205,0.28)";
+        ctx.strokeStyle = "rgba(195,242,235,0.62)";
+        ctx.lineWidth = r * 0.18;
+        ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill(); ctx.stroke();
+
+        ctx.fillStyle = "rgba(255,255,255,0.92)";
+        ctx.beginPath(); ctx.arc(x - r * 0.30, y - r * 0.32, r * 0.24, 0, TAU); ctx.fill();
+
+        const fwMag = Math.min(1, fwLight.r + fwLight.g + fwLight.b);
+        const glint = Math.pow(0.5 + 0.5 * Math.sin(time * 0.0028 + x * 40), 4) * 0.4 + fwMag * 0.5;
+        if (glint > 0.28) {
+          ctx.fillStyle = `rgba(${(200 + fwLight.r * 90) | 0},${(240 + fwLight.g * 40) | 0},255,${glint * 0.7})`;
+          ctx.beginPath(); ctx.arc(x + r * 0.22, y + r * 0.32, r * 0.28, 0, TAU); ctx.fill();
+        }
+      }
+
+      function drawCompoundLeaf(x, y, side, ang, time, g, size) {
+        if (g <= 0.001) return;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(ang + Math.sin(time * 0.0009 + side * 1.7) * 0.045);
+        const k = S * g * size;
+        ctx.scale(k, k * (side > 0 ? -1 : 1));
+
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(0.22, -0.03, 0.44, 0.01);
+        ctx.strokeStyle = "#14402a"; ctx.lineWidth = 0.012; ctx.lineCap = "round"; ctx.stroke();
+        ctx.strokeStyle = "rgba(130,200,160,0.2)"; ctx.lineWidth = 0.004; ctx.stroke();
+
+        const leafs = [[0.15, 1, 0.14, 0.06, 0], [0.15, -1, 0.14, 0.06, 0.0065], [0.29, 1, 0.17, 0.072, 0.0075], [0.29, -1, 0.17, 0.072, 0], [0.44, 0, 0.21, 0.085, 0.009]];
+        for (const [px, sd, ll, ww, dr] of leafs) {
+          const tt = px / 0.44;
+          const py = 2 * (1 - tt) * tt * -0.03 + tt * tt * 0.01;
+          ctx.save();
+          ctx.translate(px, py);
+          ctx.rotate(sd === 0 ? 0.05 + Math.sin(time * 0.0012 + side) * 0.03 : sd * 0.95 + Math.sin(time * 0.0013 + px * 20 + side) * 0.05);
+          drawLeaflet(ll, ww);
+          if (dr > 0) drawLeafDew(ll * 0.46, -ww * 0.28, dr, time);
+          ctx.restore();
+        }
+        ctx.restore();
+      }
+
+      function drawPlant(time, top, grow, rose, T, alpha) {
+        if (alpha <= 0.001 || grow <= 0.001) return;
+        const by = H + 40, bx = CX + rose.bxOff * SX;
+        const dy = by - top.y;
+        const bend = (top.x - bx) * 0.24;
+        const p0x = top.x, p0y = top.y;
+        const p1x = top.x - bend * 0.35 + S * 0.04 * rose.scale, p1y = top.y + dy * 0.32;
+        const p2x = bx + bend * 0.55 - S * 0.06 * rose.scale, p2y = top.y + dy * 0.68;
+        const p3x = bx, p3y = by;
+        for (let k = 0; k <= STEM_N; k++) {
+          const t = k / STEM_N, mt = 1 - t;
+          const a = mt * mt * mt, b = 3 * mt * mt * t, c = 3 * mt * t * t, d = t * t * t;
+          STEM[k * 2] = a * p0x + b * p1x + c * p2x + d * p3x;
+          STEM[k * 2 + 1] = a * p0y + b * p1y + c * p2y + d * p3y;
+        }
+        const stemPt = t => { const i = Math.round(t * STEM_N); return { x: STEM[i * 2], y: STEM[i * 2 + 1] }; };
+
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        const revealY = lerp(H + 60, top.y - S * 1.2 * rose.scale, grow);
+        ctx.beginPath(); ctx.rect(-50, revealY, W + 100, H - revealY + 100); ctx.clip();
+
+        for (const lf of rose.leaves) {
+          if (lf.t > 0.55) {
+            const lp = stemPt(lf.t);
+            const lg = easeOutBack(clamp((T - lf.delay) / 1.4));
+            drawCompoundLeaf(lp.x, lp.y, lf.side, lf.ang, time, lg, rose.scale * lf.sz);
+          }
+        }
+
+        const w = Math.max(3, S * 0.028 * (0.65 + 0.35 * rose.scale));
+        ctx.lineCap = "round"; ctx.lineJoin = "round";
+        strokeStemBezier(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y, w * 0.1, w * 1.18, "rgba(0,6,4,0.55)");
+        strokeStemBezier(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y, 0, w, "#0c2a1c");
+        strokeStemBezier(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y, -w * 0.12, w * 0.72, "#1c4f35");
+        strokeStemBezier(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y, -w * 0.2, w * 0.4, "#2c704c");
+        strokeStemBezier(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y, -w * 0.27, w * 0.13, "rgba(170,230,200,0.38)");
+        strokeStemBezier(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y, w * 0.36, w * 0.1, "rgba(110,170,255,0.2)");
+
+        const fwMag = Math.min(1, fwLight.r + fwLight.g + fwLight.b);
+        if (fwMag > 0.02) {
+          const sideSign = fwLight.lx >= 0 ? 1 : -1;
+          const fr = Math.min(255, (90 + fwLight.r * 360) | 0);
+          const fg = Math.min(255, (140 + fwLight.g * 320) | 0);
+          const fb = Math.min(255, (200 + fwLight.b * 320) | 0);
+          strokeStemBezier(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y, sideSign * w * 0.34, w * 0.14, `rgba(${fr},${fg},${fb},${fwMag * 0.45})`);
+        }
+
+        for (const [tt, sd] of rose.thorns) {
+          const i = Math.round(tt * STEM_N);
+          const x = STEM[i * 2], y = STEM[i * 2 + 1];
+          const i1 = Math.max(0, i - 1), i2 = Math.min(STEM_N, i + 1);
+          let tx = STEM[i2 * 2] - STEM[i1 * 2], ty = STEM[i2 * 2 + 1] - STEM[i1 * 2 + 1];
+          const tl = Math.hypot(tx, ty) || 1; tx /= tl; ty /= tl;
+          const nx = -ty * sd, ny = tx * sd, hw = w * 0.42;
+          const b1x = x + nx * hw - tx * w * 0.8, b1y = y + ny * hw - ty * w * 0.8;
+          const b2x = x + nx * hw + tx * w * 0.6, b2y = y + ny * hw + ty * w * 0.6;
+          const tipx = x + nx * (hw + w * 1.15) - tx * w * 0.95, tipy = y + ny * (hw + w * 1.15) - ty * w * 0.95;
+          ctx.fillStyle = "#2b422d";
+          ctx.beginPath(); ctx.moveTo(b1x, b1y);
+          ctx.quadraticCurveTo(x + nx * (hw + w * 0.35) - tx * w * 0.6, y + ny * (hw + w * 0.35) - ty * w * 0.6, tipx, tipy);
+          ctx.quadraticCurveTo(x + nx * (hw + w * 0.4) + tx * w * 0.05, y + ny * (hw + w * 0.4) + ty * w * 0.05, b2x, b2y);
+          ctx.closePath(); ctx.fill();
+          ctx.strokeStyle = "rgba(185,148,108,0.65)";
+          ctx.lineWidth = Math.max(0.6, w * 0.12);
+          ctx.beginPath(); ctx.moveTo((b1x + x) * 0.5, (b1y + y) * 0.5); ctx.lineTo(tipx, tipy); ctx.stroke();
+        }
+
+        for (const lf of rose.leaves) {
+          if (lf.t <= 0.55) {
+            const lp = stemPt(lf.t);
+            const lg = easeOutBack(clamp((T - lf.delay) / 1.4));
+            drawCompoundLeaf(lp.x, lp.y, lf.side, lf.ang, time, lg, rose.scale * lf.sz);
+          }
+        }
+        ctx.restore();
+      }
+
+      function drawReceptacle(x, y, hs, scale, alpha) {
+        if (hs <= 0.01) return;
+        const rx = S * 0.082 * hs * scale, ry = S * 0.088 * hs * scale;
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.drawImage(RECEP_SPR, x - rx, y - ry, rx * 2, ry * 2);
+        ctx.restore();
+      }
+
+      /* =========================================================
+         ATMOSPHERE PARTICLES, MIST, FIREFLIES & SHOOTING STARS
+      ========================================================= */
+      const bokeh = Array.from({ length: 30 }, () => ({
+        x: rnd(), y: rnd(), z: 0.2 + rnd() * 0.8, r: 0.012 + rnd() * 0.05,
+        a: 0.04 + rnd() * 0.1, sp: 0.004 + rnd() * 0.01, ph: rnd() * TAU,
+        c: rnd() < 0.12 ? 3 : (rnd() * 3) | 0
+      }));
+      const fgBokeh = [[0.03, 0.9], [0.97, 0.84], [0.08, 0.12], [0.93, 0.2], [0.55, 1.04], [0.78, 0.98]].map(([x, y]) => ({
+        x, y, r: 0.1 + rnd() * 0.1, a: 0.03 + rnd() * 0.035, ph: rnd() * TAU, c: (rnd() * 3) | 0
+      }));
+      const dust = Array.from({ length: 70 }, () => ({
+        x: rnd(), y: rnd(), r: 0.4 + rnd() * 1.4, sp: 0.002 + rnd() * 0.008, ph: rnd() * TAU, a: 0.15 + rnd() * 0.5, gold: rnd() < 0.15
+      }));
+      const twinkle = Array.from({ length: 28 }, () => ({ x: rnd(), y: rnd() * 0.55, r: 0.6 + rnd() * 1.1, ph: rnd() * TAU, sp: 0.6 + rnd() * 1.8 }));
+
+      // Volumetric drifting night mist wisps
+      const mistLayers = Array.from({ length: 8 }, (_, idx) => ({
+        x: idx / 7 + rnd() * 0.15,
+        y: 0.72 + (idx % 4) * 0.08 + rnd() * 0.05,
+        w: 0.42 + rnd() * 0.34,
+        h: 0.15 + rnd() * 0.12,
+        sp: (0.004 + rnd() * 0.007) * (idx % 2 === 0 ? 1 : -0.6),
+        a: 0.28 + rnd() * 0.22,
+        tex: idx % 2,
+        fg: idx >= 5,
+        ph: rnd() * TAU
+      }));
+
+      function drawMist(dt, now, gust, fade, foreground) {
+        const dts = dt / 1000;
+        ctx.save();
+        ctx.globalCompositeOperation = "screen";
+        for (const m of mistLayers) {
+          if (m.fg !== foreground) continue;
+          m.x = ((m.x + (m.sp + gust * 0.004) * dts) % 1.4 + 1.4) % 1.4;
+          const px = (m.x - 0.2) * W;
+          const py = m.y * H + Math.sin(now * 0.0003 + m.ph) * H * 0.012;
+          const mw = m.w * W;
+          const mh = m.h * H;
+          const fwBoost = 1 + Math.min(0.45, (fwLight.r + fwLight.g + fwLight.b) * 0.55);
+          ctx.globalAlpha = m.a * (0.85 + 0.15 * Math.sin(now * 0.0004 + m.ph)) * fwBoost * fade;
+          ctx.drawImage(MIST_TEX[m.tex], px - mw * 0.5, py - mh * 0.5, mw, mh);
+        }
+        ctx.restore();
+      }
+
+      // Bioluminescent fireflies near garden & petals
+      const fireflies = Array.from({ length: 16 }, () => ({
+        x: 0.12 + rnd() * 0.76,
+        y: 0.36 + rnd() * 0.54,
+        ph: rnd() * TAU,
+        sp: 0.35 + rnd() * 0.65,
+        radX: 0.02 + rnd() * 0.05,
+        radY: 0.015 + rnd() * 0.04,
+        r: 1.1 + rnd() * 1.3,
+        gold: rnd() < 0.45
+      }));
+
+      function drawFireflies(now, gust, fade) {
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        for (const f of fireflies) {
+          const t = now * 0.001 * f.sp + f.ph;
+          const fx = (f.x + Math.sin(t * 0.7) * f.radX + Math.cos(t * 0.33) * f.radX * 0.5 + gust * 0.012) * W;
+          const fy = (f.y + Math.sin(t * 0.53 + 1.1) * f.radY + Math.cos(t * 0.25) * f.radY * 0.4) * H;
+          const pulse = Math.pow(0.5 + 0.5 * Math.sin(now * 0.0022 * f.sp + f.ph * 2.1), 2.8);
+          const a = (0.08 + pulse * 0.72) * fade;
+          if (a < 0.03) continue;
+
+          const spr = f.gold ? SOFT_GOLD : SOFT;
+          const haloR = f.r * (6.5 + pulse * 5.0);
+          ctx.globalAlpha = a * 0.55;
+          ctx.drawImage(spr, fx - haloR, fy - haloR, haloR * 2, haloR * 2);
+
+          ctx.globalAlpha = a;
+          ctx.fillStyle = f.gold ? "#fff4d6" : "#e2f7ff";
+          ctx.beginPath();
+          ctx.arc(fx, fy, f.r * (0.65 + pulse * 0.45), 0, TAU);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      // Delicate high-altitude shooting stars
+      const meteors = [];
+      let nextMeteor = 2.6;
+
+      function updateAndDrawMeteors(dt, fade) {
+        const dts = dt / 1000;
+        nextMeteor -= dts;
+        if (nextMeteor <= 0) {
+          const fromLeft = Math.random() < 0.55;
+          const x = (fromLeft ? lerp(0.08, 0.55, Math.random()) : lerp(0.45, 0.92, Math.random())) * W;
+          const y = lerp(0.04, 0.28, Math.random()) * H;
+          const ang = fromLeft ? lerp(0.22, 0.52, Math.random()) : lerp(PI - 0.52, PI - 0.22, Math.random());
+          const spd = Math.min(W, H) * (0.85 + Math.random() * 0.45);
+          meteors.push({
+            x, y,
+            vx: Math.cos(ang) * spd,
+            vy: Math.sin(ang) * spd,
+            age: 0,
+            life: 0.52 + Math.random() * 0.30,
+            len: 75 + Math.random() * 65
+          });
+          nextMeteor = 4.2 + Math.random() * 5.0;
+        }
+
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        ctx.lineCap = "round";
+        for (let i = meteors.length - 1; i >= 0; i--) {
+          const m = meteors[i];
+          m.age += dts;
+          if (m.age >= m.life) { meteors.splice(i, 1); continue; }
+          m.x += m.vx * dts;
+          m.y += m.vy * dts;
+          const t = m.age / m.life;
+          const a = Math.sin(t * PI) * 0.62 * fade;
+          const spd = Math.hypot(m.vx, m.vy) || 1;
+          const tx = m.x - (m.vx / spd) * m.len * Math.min(1, t * 2.5);
+          const ty = m.y - (m.vy / spd) * m.len * Math.min(1, t * 2.5);
+
+          const g = ctx.createLinearGradient(tx, ty, m.x, m.y);
+          g.addColorStop(0, "rgba(120,190,255,0)");
+          g.addColorStop(0.7, `rgba(175,220,255,${a * 0.55})`);
+          g.addColorStop(1, `rgba(245,252,255,${a})`);
+          ctx.strokeStyle = g;
+          ctx.lineWidth = 1.4;
+          ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(m.x, m.y); ctx.stroke();
+
+          ctx.fillStyle = `rgba(255,255,255,${a})`;
+          ctx.beginPath(); ctx.arc(m.x, m.y, 1.3, 0, TAU); ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      function newFall(f, init) {
+        f.x = rnd(); f.y = init ? rnd() * 1.2 - 0.1 : -0.06 - rnd() * 0.25;
+        f.z = 0.45 + rnd() * 0.85;
+        f.vx = (rnd() - 0.35) * 0.02; f.vy = 0.025 + rnd() * 0.03;
+        f.rot = rnd() * TAU; f.vr = (rnd() - 0.5) * 1.3;
+        f.flip = rnd() * TAU; f.vf = 0.8 + rnd() * 1.8;
+        f.sz = 0.022 + rnd() * 0.016; f.ph = rnd() * TAU;
+        return f;
+      }
+      const falling = Array.from({ length: 10 }, () => newFall({}, true));
+
+      const FALL_PETAL_SPR = [0, 1].map(front => {
+        const c = mk(64, 64), x = c.getContext("2d");
+        const size = 26;
+        x.translate(32, 34);
+        const g = x.createLinearGradient(0, size * 0.45, 0, -size);
+        if (front) { g.addColorStop(0, "#08194b"); g.addColorStop(0.55, "#2255c4"); g.addColorStop(1, "#a6c9ff"); }
+        else { g.addColorStop(0, "#173072"); g.addColorStop(0.55, "#4473d5"); g.addColorStop(1, "#c2daff"); }
+        x.fillStyle = g;
+        x.beginPath(); x.moveTo(0, size * 0.45);
+        x.bezierCurveTo(-size * 0.75, size * 0.2, -size * 0.7, -size * 0.75, -size * 0.05, -size * 0.95);
+        x.quadraticCurveTo(size * 0.08, -size * 1.02, size * 0.15, -size * 0.9);
+        x.bezierCurveTo(size * 0.78, -size * 0.6, size * 0.6, size * 0.2, 0, size * 0.45);
+        x.fill();
+        x.strokeStyle = "rgba(210,235,255,0.20)";
+        x.lineWidth = 0.9;
+        x.stroke();
+        x.beginPath();
+        x.moveTo(0, size * 0.25);
+        x.quadraticCurveTo(-size * 0.12, -size * 0.25, 0.02 * size, -size * 0.72);
+        x.strokeStyle = "rgba(200,230,255,0.16)";
+        x.stroke();
+        return c;
+      });
+
+      function drawFallPetal(f, alpha) {
+        const x = f.x * W, y = f.y * H, size = f.sz * S * f.z;
+        const fy = Math.cos(f.flip);
+        const sy = Math.abs(fy) < 0.12 ? (fy < 0 ? -0.12 : 0.12) : fy;
+        const r = size * 1.23;
+        ctx.save();
+        ctx.translate(x, y); ctx.rotate(f.rot);
+        ctx.scale(1, sy);
+        ctx.globalAlpha = alpha * (f.z > 1 ? 0.78 : 0.55 + f.z * 0.3);
+        ctx.drawImage(FALL_PETAL_SPR[fy > 0 ? 1 : 0], -r, -r * 1.06, r * 2, r * 2);
+        ctx.restore();
+      }
+
+      /* =========================================================
+         FIREWORKS (PHOTOREALISTIC PYROTECHNICS)
+      ========================================================= */
+      const FW_PALETTES = [
+        // 1. Sapphire & Ice Crown
+        { core: [245, 252, 255], main: [80, 165, 255], alt: [165, 225, 255], tail: [22, 68, 195], ember: [140, 195, 255], goldRatio: 0.15 },
+        // 2. Bioluminescent Cyan & Starlight
+        { core: [238, 255, 255], main: [64, 228, 255], alt: [135, 190, 255], tail: [16, 98, 175], ember: [130, 235, 255], goldRatio: 0.10 },
+        // 3. Moonlight Periwinkle & Silver
+        { core: [248, 245, 255], main: [150, 175, 255], alt: [205, 175, 255], tail: [68, 78, 185], ember: [195, 205, 255], goldRatio: 0.20 },
+        // 4. Champagne Kamuro Gold & Cobalt
+        { core: [255, 250, 232], main: [255, 210, 130], alt: [95, 170, 255], tail: [185, 115, 38], ember: [255, 190, 95], goldRatio: 0.78 },
+        // 5. Royal Blue & Diamond Glitter
+        { core: [255, 255, 255], main: [110, 180, 255], alt: [215, 238, 255], tail: [30, 82, 210], ember: [200, 228, 255], goldRatio: 0.25 }
+      ];
+
+      // Pre-rendered radial flash & smoke textures per firework palette (zero per-frame gradient allocs)
+      const FW_FLASH_SPR = FW_PALETTES.map(p => {
+        const c = mk(96, 96), x = c.getContext("2d");
+        const g = x.createRadialGradient(48, 48, 0, 48, 48, 48);
+        g.addColorStop(0, `rgba(${p.core[0]},${p.core[1]},${p.core[2]},1)`);
+        g.addColorStop(0.35, `rgba(${p.main[0]},${p.main[1]},${p.main[2]},0.55)`);
+        g.addColorStop(1, "rgba(0,0,0,0)");
+        x.fillStyle = g; x.fillRect(0, 0, 96, 96);
+        return c;
+      });
+      const FW_SMOKE_SPR = FW_PALETTES.map(p => {
+        const c = mk(64, 64), x = c.getContext("2d");
+        const g = x.createRadialGradient(32, 32, 0, 32, 32, 32);
+        g.addColorStop(0, `rgba(${p.main[0]},${p.main[1]},${p.main[2]},1)`);
+        g.addColorStop(0.55, `rgba(${p.tail[0]},${p.tail[1]},${p.tail[2]},0.45)`);
+        g.addColorStop(1, "rgba(0,0,0,0)");
+        x.fillStyle = g; x.fillRect(0, 0, 64, 64);
+        return c;
+      });
+
+      const fwRockets = [];
+      const fwSparks = [];
+      const fwEmbers = [];
+      const fwSmoke = [];
+      const fwFlashes = [];
+      const fwShockwaves = [];
+      const fwPops = [];
+      const fwLaunches = [];
+      let fwNextSpawn = 0.25;
+      const TRAIL_LEN = 14;
+      const MAX_FW_SPARKS = 420;
+      const MAX_FW_EMBERS = 420;
+      const sparkPool = [];
+      const emberPool = [];
+
+      function pickSkyTarget() {
+        const left = Math.random() < 0.5;
+        const tx = (left ? lerp(0.07, 0.34, Math.random()) : lerp(0.66, 0.93, Math.random())) * W;
+        const ty = lerp(0.12, 0.48, Math.random()) * H;
+        return [tx, ty];
+      }
+
+      function createSpark(x, y, vx, vy, pal, useAlt, life, size, drag, grav, strobe, canSplit, shedRate = 0.22, crackle = false, depth = 1) {
+        if (fwSparks.length >= MAX_FW_SPARKS) return;
+        let sp = sparkPool.pop();
+        if (!sp) {
+          sp = { hx: new Float32Array(TRAIL_LEN), hy: new Float32Array(TRAIL_LEN) };
+        }
+        sp.x = x; sp.y = y; sp.vx = vx; sp.vy = vy;
+        sp.hx[0] = x; sp.hy[0] = y;
+        sp.hIdx = 0; sp.hCount = 1;
+        sp.pal = pal; sp.useAlt = useAlt;
+        sp.age = 0; sp.life = life;
+        sp.size = size; sp.drag = drag; sp.grav = grav;
+        sp.strobe = strobe; sp.canSplit = canSplit; sp.splitDone = false;
+        sp.crackle = crackle; sp.popDone = false;
+        sp.depth = depth; sp.shedRate = shedRate;
+        sp.phase = Math.random() * TAU;
+        sp.drawA = 0; sp.colCss = ""; sp.hr = 3;
+        fwSparks.push(sp);
+      }
+
+      function createEmber(x, y, vx, vy, col, life, size, twinkle) {
+        if (fwEmbers.length >= MAX_FW_EMBERS) return;
+        let em = emberPool.pop();
+        if (!em) em = {};
+        em.x = x; em.y = y; em.vx = vx; em.vy = vy; em.col = col;
+        em.age = 0; em.life = life; em.size = size; em.twinkle = twinkle;
+        em.phase = Math.random() * TAU;
+        fwEmbers.push(em);
+      }
+
+      function detonateFirework(x, y, pal, style, depth = 1) {
+        const sc = Math.min(W, H) * depth;
+        const palIdx = Math.max(0, FW_PALETTES.indexOf(pal));
+        const flashR = sc * (style === 1 ? 0.30 : 0.23);
+        fwFlashes.push({ x, y, r: flashR, pal, palIdx, age: 0, life: 0.55, depth });
+        fwShockwaves.push({ x, y, maxR: sc * 0.16, pal, age: 0, life: 0.34 });
+
+        // Illuminated smoke puffs at detonation center
+        const smokeCount = 3 + ((Math.random() * 2) | 0);
+        for (let i = 0; i < smokeCount; i++) {
+          const ang = Math.random() * TAU;
+          const dist = Math.random() * sc * 0.03;
+          fwSmoke.push({
+            x: x + Math.cos(ang) * dist,
+            y: y + Math.sin(ang) * dist,
+            vx: Math.cos(ang) * 14,
+            vy: Math.sin(ang) * 10 - 8,
+            r: sc * (0.04 + Math.random() * 0.045),
+            palIdx,
+            age: 0,
+            life: 1.5 + Math.random() * 1.0
+          });
+        }
+
+        const baseSpeed = sc * (style === 1 ? 0.52 : 0.45);
+        const szScale = 0.78 + 0.22 * depth;
+
+        if (style === 0) {
+          // 0: Peony / Chrysanthemum (3D sphere + contrasting inner pistil)
+          const count = 46 + ((Math.random() * 12) | 0);
+          const tiltX = (Math.random() - 0.5) * 0.85;
+          const tiltY = (Math.random() - 0.5) * 0.85;
+          const cx = Math.cos(tiltX), sx = Math.sin(tiltX);
+          const cy = Math.cos(tiltY), sy = Math.sin(tiltY);
+          const strobe = Math.random() < 0.38;
+          const crackle = Math.random() < 0.32;
+
+          for (let i = 0; i < count; i++) {
+            const u = Math.random() * 2 - 1;
+            const phi = Math.random() * TAU;
+            const rr = Math.sqrt(Math.max(0, 1 - u * u));
+            const dx0 = rr * Math.cos(phi);
+            const dy0 = rr * Math.sin(phi);
+            const dz0 = u;
+            const dx1 = dx0 * cy + dz0 * sy;
+            const dz1 = -dx0 * sy + dz0 * cy;
+            const dy2 = dy0 * cx - dz1 * sx;
+            const dz2 = dy0 * sx + dz1 * cx;
+
+            const depthScale = 0.74 + (dz2 + 1) * 0.20;
+            const spd = baseSpeed * (0.74 + Math.random() * 0.36) * depthScale;
+            createSpark(
+              x, y, dx1 * spd, dy2 * spd,
+              pal, Math.random() < 0.34,
+              1.45 + Math.random() * 0.60,
+              (1.25 + Math.random() * 0.75) * depthScale * szScale,
+              0.978, 62, strobe && Math.random() < 0.65, false, 0.16, crackle && Math.random() < 0.45, depth
+            );
+          }
+          const innerPal = FW_PALETTES[(palIdx + 2) % FW_PALETTES.length];
+          for (let i = 0; i < 14; i++) {
+            const u = Math.random() * 2 - 1;
+            const phi = Math.random() * TAU;
+            const rr = Math.sqrt(Math.max(0, 1 - u * u));
+            const spd = baseSpeed * (0.34 + Math.random() * 0.16);
+            createSpark(
+              x, y, rr * Math.cos(phi) * spd, rr * Math.sin(phi) * spd,
+              innerPal, true,
+              1.10 + Math.random() * 0.42,
+              (1.15 + Math.random() * 0.50) * szScale,
+              0.974, 54, true, false, 0.10, false, depth
+            );
+          }
+        } else if (style === 1) {
+          // 1: Kamuro / Brocade Willow (long-burning weeping streamers + twinkling strobe tips)
+          const count = 44 + ((Math.random() * 12) | 0);
+          const crackle = Math.random() < 0.35;
+          for (let i = 0; i < count; i++) {
+            const u = Math.random() * 2 - 1;
+            const phi = Math.random() * TAU;
+            const rr = Math.sqrt(Math.max(0, 1 - u * u));
+            const depthScale = 0.76 + (u + 1) * 0.18;
+            const spd = baseSpeed * (0.55 + Math.random() * 0.44) * depthScale;
+            createSpark(
+              x, y, rr * Math.cos(phi) * spd, rr * Math.sin(phi) * spd - sc * 0.04,
+              pal, Math.random() < 0.28,
+              2.15 + Math.random() * 0.75,
+              (1.45 + Math.random() * 0.65) * depthScale * szScale,
+              0.976, 92, true, false, 0.25, crackle && Math.random() < 0.35, depth
+            );
+          }
+        } else if (style === 2) {
+          // 2: Saturn / Double-Ring + Spherical Core (with natural 3D spherical scatter)
+          const ringN = 32;
+          const coreN = 20;
+          const tilt = (Math.random() - 0.5) * 0.7;
+          const tiltAxis = Math.random() * TAU;
+          const squash = 0.45 + Math.random() * 0.38;
+          const ca = Math.cos(tiltAxis + tilt), sa = Math.sin(tiltAxis + tilt);
+
+          for (let i = 0; i < ringN; i++) {
+            const ang = (i / ringN) * TAU + (Math.random() - 0.5) * 0.18;
+            const rx = Math.cos(ang);
+            const ry = Math.sin(ang) * squash + (Math.random() - 0.5) * 0.18;
+            const spd = baseSpeed * (0.80 + Math.random() * 0.34);
+            const vx = (rx * ca - ry * sa) * spd;
+            const vy = (rx * sa + ry * ca) * spd + (Math.random() - 0.5) * baseSpeed * 0.14;
+            createSpark(
+              x, y, vx, vy,
+              pal, Math.random() < 0.25,
+              1.45 + Math.random() * 0.48,
+              (1.45 + Math.random() * 0.55) * szScale,
+              0.977, 60, Math.random() < 0.30, false, 0.14, false, depth
+            );
+          }
+          const innerPal = FW_PALETTES[(palIdx + 3) % FW_PALETTES.length];
+          for (let i = 0; i < coreN; i++) {
+            const u = Math.random() * 2 - 1;
+            const phi = Math.random() * TAU;
+            const rr = Math.sqrt(Math.max(0, 1 - u * u));
+            const spd = baseSpeed * (0.34 + Math.random() * 0.28);
+            createSpark(
+              x, y, rr * Math.cos(phi) * spd, rr * Math.sin(phi) * spd,
+              innerPal, Math.random() < 0.5,
+              1.30 + Math.random() * 0.48,
+              (1.25 + Math.random() * 0.55) * szScale,
+              0.975, 56, true, false, 0.14, false, depth
+            );
+          }
+        } else if (style === 3) {
+          // 3: Palm / Horsetail Plume (3D-scattered arching comet arms + dense ember waterfalls)
+          const arms = 14 + ((Math.random() * 4) | 0);
+          for (let i = 0; i < arms; i++) {
+            const u = Math.random() * 1.75 - 0.75;
+            const phi = (i / arms) * TAU + (Math.random() - 0.5) * 0.45;
+            const rr = Math.sqrt(Math.max(0.05, 1 - u * u * 0.65));
+            const spd = baseSpeed * (0.72 + Math.random() * 0.38);
+            createSpark(
+              x, y,
+              rr * Math.cos(phi) * spd,
+              rr * Math.sin(phi) * spd * 0.88 - sc * 0.05,
+              pal, Math.random() < 0.35,
+              1.80 + Math.random() * 0.52,
+              (2.05 + Math.random() * 0.60) * szScale,
+              0.976, 82, false, false, 0.65, false, depth
+            );
+          }
+          for (let i = 0; i < 24; i++) {
+            const u = Math.random() * 2 - 1;
+            const phi = Math.random() * TAU;
+            const rr = Math.sqrt(Math.max(0, 1 - u * u));
+            const spd = baseSpeed * (0.28 + Math.random() * 0.24);
+            createSpark(
+              x, y, rr * Math.cos(phi) * spd, rr * Math.sin(phi) * spd,
+              pal, true,
+              1.00 + Math.random() * 0.38,
+              (1.15 + Math.random() * 0.40) * szScale,
+              0.974, 55, true, false, 0.15, false, depth
+            );
+          }
+        } else {
+          // 4: Crossette & Crackle Finale
+          const count = 28;
+          for (let i = 0; i < count; i++) {
+            const u = Math.random() * 2 - 1;
+            const phi = Math.random() * TAU;
+            const rr = Math.sqrt(Math.max(0, 1 - u * u));
+            const spd = baseSpeed * (0.65 + Math.random() * 0.36);
+            createSpark(
+              x, y, rr * Math.cos(phi) * spd, rr * Math.sin(phi) * spd,
+              pal, Math.random() < 0.4,
+              1.12 + Math.random() * 0.32,
+              (1.65 + Math.random() * 0.50) * szScale,
+              0.979, 58, true, true, 0.20, true, depth
+            );
+          }
+        }
+      }
+
+      function spawnRocket(tx, ty, instant = false, interactive = false) {
+        if (!W || !H) return;
+        const pal = FW_PALETTES[(Math.random() * FW_PALETTES.length) | 0];
+        const style = (Math.random() * 5) | 0;
+        const depth = interactive ? 1.05 : 0.64 + Math.random() * 0.48;
+        if (tx === undefined || ty === undefined) {
+          [tx, ty] = pickSkyTarget();
+        }
+        if (instant) {
+          detonateFirework(tx, ty, pal, style, depth);
+          return;
+        }
+        const sx = clamp(tx + (Math.random() - 0.5) * W * 0.16, W * 0.05, W * 0.95);
+        const sy = H + 12;
+        const flight = 0.68 + Math.random() * 0.38;
+        const grav = 220;
+        const vx = (tx - sx) / flight;
+        const vy = (ty - sy - 0.5 * grav * flight * flight) / flight;
+        fwRockets.push({
+          x: sx, y: sy, vx, vy, grav,
+          tx, ty, age: 0, flight,
+          pal, style, depth,
+          wobbleAmp: 12 + Math.random() * 14,
+          wobbleFreq: 16 + Math.random() * 10,
+          wobblePhase: Math.random() * TAU
+        });
+        if (interactive) {
+          fwLaunches.push({ x: tx, y: ty, sx, pal, age: 0, life: 0.48 });
+        }
+      }
+
+      function initFireworks() {
+        fwRockets.length = 0;
+        fwSparks.length = 0;
+        fwEmbers.length = 0;
+        fwSmoke.length = 0;
+        fwFlashes.length = 0;
+        fwShockwaves.length = 0;
+        fwPops.length = 0;
+        fwLaunches.length = 0;
+        fwNextSpawn = 0.25;
+        // Two immediate high-sky bursts for instant atmosphere
+        spawnRocket(W * 0.22, H * 0.24, true);
+        spawnRocket(W * 0.78, H * 0.21, true);
+        // Three staggered ascending shells
+        for (let i = 0; i < 3; i++) {
+          const [tx, ty] = pickSkyTarget();
+          spawnRocket(tx, ty, false);
+        }
+      }
+
+      canvas.addEventListener("pointerdown", e => {
+        const ty = clamp(e.clientY, H * 0.08, H * 0.65);
+        spawnRocket(e.clientX, ty, false, true);
+      });
+
+      function updateAndDrawFireworks(dt, now, fade) {
+        const dts = dt / 1000;
+        fwNextSpawn -= dts;
+        if (fwNextSpawn <= 0) {
+          const salvo = Math.random() < 0.55 ? (Math.random() < 0.32 ? 3 : 2) : 1;
+          for (let i = 0; i < salvo; i++) {
+            const [tx, ty] = pickSkyTarget();
+            spawnRocket(tx, ty, false);
+          }
+          fwNextSpawn = 0.44 + Math.random() * 0.48;
+        }
+
+        ctx.save();
+        ctx.globalCompositeOperation = "screen";
+
+        // 0. Ambient atmospheric sky illumination from active bursts
+        const skyGlow = Math.min(0.28, (fwLight.r + fwLight.g + fwLight.b) * 0.42);
+        if (skyGlow > 0.015) {
+          const sx = clamp(CX + fwLight.lx * W * 0.35, 0, W);
+          const sy = clamp(H * 0.28 - fwLight.lz * H * 0.14, 0, H * 0.55);
+          const sr = Math.max(W, H) * 0.52;
+          ctx.globalAlpha = skyGlow * fade;
+          ctx.drawImage(AURA_SPR, sx - sr, sy - sr, sr * 2, sr * 2);
+          ctx.globalAlpha = 1;
+        }
+
+        // 0b. Interactive launch flare & target ripple
+        for (let i = fwLaunches.length - 1; i >= 0; i--) {
+          const ln = fwLaunches[i];
+          ln.age += dts;
+          if (ln.age >= ln.life) { fwLaunches.splice(i, 1); continue; }
+          const t = ln.age / ln.life;
+          const a = Math.sin(t * PI) * 0.42 * fade;
+          ctx.strokeStyle = `rgba(${ln.pal.core[0]},${ln.pal.core[1]},${ln.pal.core[2]},${a})`;
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.arc(ln.x, ln.y, (1 - t) * 18 + 3, 0, TAU);
+          ctx.stroke();
+
+          ctx.globalAlpha = a * 0.8;
+          ctx.drawImage(SOFT, ln.sx - 54, H - 54, 108, 108);
+          ctx.globalAlpha = 1;
+        }
+
+        // 1. Illuminated smoke puffs (pre-rendered sprite, zero per-frame gradient allocs)
+        for (let i = fwSmoke.length - 1; i >= 0; i--) {
+          const sm = fwSmoke[i];
+          sm.age += dts;
+          if (sm.age >= sm.life) { fwSmoke.splice(i, 1); continue; }
+          sm.x += sm.vx * dts;
+          sm.y += sm.vy * dts;
+          const t = sm.age / sm.life;
+          const a = Math.sin(t * PI) * (1 - t) * 0.085 * fade;
+          const rr = sm.r * (0.6 + t * 1.45);
+          ctx.globalAlpha = a;
+          ctx.drawImage(FW_SMOKE_SPR[sm.palIdx], sm.x - rr, sm.y - rr, rr * 2, rr * 2);
+        }
+
+        // 2. Sky flashes on burst + anamorphic starburst optical glint + dynamic light for rose
+        let lwSum = 0, lxAcc = 0, lyAcc = 0, lzAcc = 0, lrAcc = 0, lgAcc = 0, lbAcc = 0;
+        for (let i = fwFlashes.length - 1; i >= 0; i--) {
+          const fl = fwFlashes[i];
+          fl.age += dts;
+          if (fl.age >= fl.life) { fwFlashes.splice(i, 1); continue; }
+          const t = fl.age / fl.life;
+          const pow = Math.pow(1 - t, 2.2);
+          const dScale = 0.72 + 0.28 * (fl.depth || 1);
+          const a = pow * 0.40 * fade * dScale;
+          const rr = fl.r * (0.65 + 0.55 * easeOutCubic(t));
+          const c = fl.pal.main;
+          ctx.globalAlpha = a;
+          ctx.drawImage(FW_FLASH_SPR[fl.palIdx], fl.x - rr, fl.y - rr, rr * 2, rr * 2);
+
+          // Anamorphic starburst lens glint during peak detonation
+          if (t < 0.28) {
+            const ga = Math.pow(1 - t / 0.28, 2) * 0.28 * fade * dScale;
+            const spr = fl.pal.goldRatio > 0.5 ? SOFT_GOLD : SOFT;
+            ctx.save();
+            ctx.translate(fl.x, fl.y);
+            ctx.globalAlpha = ga;
+            ctx.save();
+            ctx.scale(6.8, 0.28);
+            ctx.drawImage(spr, -14, -14, 28, 28);
+            ctx.restore();
+            ctx.save();
+            ctx.scale(0.28, 4.2);
+            ctx.drawImage(spr, -12, -12, 24, 24);
+            ctx.restore();
+            ctx.restore();
+          }
+
+          // Contribute illumination toward rose petals
+          const w = pow * 0.65 * dScale;
+          lwSum += w;
+          lxAcc += ((fl.x - CX) / Math.max(1, W)) * 2.2 * w;
+          lyAcc += 0.25 * w;
+          lzAcc += clamp((H * 0.52 - fl.y) / Math.max(1, H) * 2.4, -0.2, 1.4) * w;
+          lrAcc += (c[0] / 255) * w;
+          lgAcc += (c[1] / 255) * w;
+          lbAcc += (c[2] / 255) * w;
+        }
+        ctx.globalAlpha = 1;
+
+        // 2b. Expanding atmospheric shockwave rings
+        for (let i = fwShockwaves.length - 1; i >= 0; i--) {
+          const sw = fwShockwaves[i];
+          sw.age += dts;
+          if (sw.age >= sw.life) { fwShockwaves.splice(i, 1); continue; }
+          const t = sw.age / sw.life;
+          const r = sw.maxR * (0.12 + 0.88 * easeOutCubic(t));
+          const a = Math.pow(1 - t, 2.0) * 0.26 * fade;
+          const c = sw.pal.alt;
+          ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+          ctx.lineWidth = Math.max(0.4, (1 - t) * 2.2);
+          ctx.beginPath();
+          ctx.arc(sw.x, sw.y, r, 0, TAU);
+          ctx.stroke();
+        }
+
+        // 3. Ascending shells (dim amber fuse point + charcoal tail sparks, no stiff white stick)
+        for (let i = fwRockets.length - 1; i >= 0; i--) {
+          const r = fwRockets[i];
+          r.age += dts;
+          r.vy += r.grav * dts;
+          r.x += r.vx * dts;
+          r.y += r.vy * dts;
+
+          const wob = Math.sin(r.age * r.wobbleFreq + r.wobblePhase) * r.wobbleAmp * (1 - r.age / r.flight) * dts;
+          const rx = r.x + wob;
+          const ry = r.y;
+
+          // Shed sparse flickering golden-amber charcoal sparks along trajectory
+          if (Math.random() < 0.85) {
+            const count = Math.random() < 0.45 ? 2 : 1;
+            for (let c = 0; c < count; c++) {
+              createEmber(
+                rx + (Math.random() - 0.5) * 2,
+                ry + (Math.random() - 0.5) * 2,
+                -r.vx * 0.14 + (Math.random() - 0.5) * 34,
+                -r.vy * 0.10 + (Math.random() - 0.5) * 24,
+                Math.random() < 0.72 ? [255, 198, 115] : r.pal.ember,
+                0.24 + Math.random() * 0.26,
+                0.75 + Math.random() * 0.6,
+                true
+              );
+            }
+          }
+
+          // Tiny dim-gold fuse point
+          ctx.fillStyle = `rgba(255,215,150,${0.32 * fade})`;
+          ctx.beginPath();
+          ctx.arc(rx, ry, 3.2, 0, TAU);
+          ctx.fill();
+          ctx.fillStyle = `rgba(255,244,220,${0.78 * fade})`;
+          ctx.beginPath();
+          ctx.arc(rx, ry, 1.35, 0, TAU);
+          ctx.fill();
+
+          if (r.age >= r.flight) {
+            detonateFirework(rx, ry, r.pal, r.style, r.depth);
+            fwRockets.splice(i, 1);
+          }
+        }
+
+        // 4. Exploding pyrotechnic stars (long continuous ribbon trails + pin-sharp core)
+        ctx.globalCompositeOperation = "lighter";
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        const dragStep = dts * 60;
+
+        let spSampleCount = 0;
+        for (let i = fwSparks.length - 1; i >= 0; i--) {
+          const sp = fwSparks[i];
+          sp.age += dts;
+          if (sp.age >= sp.life) {
+            const lastSp = fwSparks.pop();
+            if (i < fwSparks.length) fwSparks[i] = lastSp;
+            if (sparkPool.length < MAX_FW_SPARKS) sparkPool.push(sp);
+            continue;
+          }
+
+          const prog = sp.age / sp.life;
+          const dragPow = Math.pow(sp.drag, dragStep);
+          sp.vx *= dragPow;
+          sp.vy = sp.vy * dragPow + sp.grav * dts;
+          sp.x += sp.vx * dts;
+          sp.y += sp.vy * dts;
+
+          sp.hIdx = (sp.hIdx + 1) % TRAIL_LEN;
+          sp.hx[sp.hIdx] = sp.x;
+          sp.hy[sp.hIdx] = sp.y;
+          if (sp.hCount < TRAIL_LEN) sp.hCount++;
+
+          // Continuous shedding of twinkling micro-embers
+          if (prog < 0.82 && Math.random() < sp.shedRate) {
+            const ecol = sp.pal.ember || sp.pal.alt;
+            createEmber(
+              sp.x + (Math.random() - 0.5) * 2,
+              sp.y + (Math.random() - 0.5) * 2,
+              sp.vx * 0.16 + (Math.random() - 0.5) * 22,
+              sp.vy * 0.16 + (Math.random() - 0.5) * 22,
+              ecol,
+              0.38 + Math.random() * 0.42,
+              0.65 + Math.random() * 0.65,
+              true
+            );
+          }
+
+          // Secondary crossette split + crackle micro-burst
+          if (sp.canSplit && !sp.splitDone && prog > 0.44) {
+            sp.splitDone = true;
+            const sc = Math.min(W, H) * 0.12 * (sp.depth || 1);
+            for (let m = 0; m < 4; m++) {
+              const ang = (m / 4) * TAU + sp.phase;
+              createSpark(
+                sp.x, sp.y,
+                sp.vx * 0.32 + Math.cos(ang) * sc,
+                sp.vy * 0.32 + Math.sin(ang) * sc,
+                sp.pal, !sp.useAlt,
+                0.68 + Math.random() * 0.25,
+                1.20, 0.974, 65, true, false, 0.22, true, sp.depth
+              );
+            }
+            for (let c = 0; c < 6; c++) {
+              const ang = Math.random() * TAU;
+              const spd = 28 + Math.random() * 55;
+              createEmber(
+                sp.x, sp.y,
+                Math.cos(ang) * spd, Math.sin(ang) * spd,
+                sp.pal.core, 0.28 + Math.random() * 0.22, 1.1, true
+              );
+            }
+          }
+
+          // Crackling dragon-egg micro-pops near end of star burn
+          if (sp.crackle && !sp.popDone && prog > 0.86) {
+            sp.popDone = true;
+            for (let pIdx = 0; pIdx < 2; pIdx++) {
+              fwPops.push({
+                x: sp.x + (Math.random() - 0.5) * 14,
+                y: sp.y + (Math.random() - 0.5) * 14,
+                col: sp.pal.core,
+                r: 1.6 + Math.random() * 1.4,
+                age: 0,
+                life: 0.08 + Math.random() * 0.06
+              });
+            }
+          }
+
+          const targetCol = sp.useAlt ? sp.pal.alt : sp.pal.main;
+          let cr8, cg8, cb8;
+          if (prog < 0.20) {
+            const ct = prog / 0.20;
+            cr8 = (sp.pal.core[0] + (targetCol[0] - sp.pal.core[0]) * ct) | 0;
+            cg8 = (sp.pal.core[1] + (targetCol[1] - sp.pal.core[1]) * ct) | 0;
+            cb8 = (sp.pal.core[2] + (targetCol[2] - sp.pal.core[2]) * ct) | 0;
+          } else {
+            const ct = (prog - 0.20) / 0.80;
+            cr8 = (targetCol[0] + (sp.pal.tail[0] - targetCol[0]) * ct) | 0;
+            cg8 = (targetCol[1] + (sp.pal.tail[1] - targetCol[1]) * ct) | 0;
+            cb8 = (targetCol[2] + (sp.pal.tail[2] - targetCol[2]) * ct) | 0;
+          }
+
+          const emerge = smooth(0.04, 0.18, prog);
+          let alpha = emerge * (prog < 0.68 ? 1 : Math.pow(1 - (prog - 0.68) / 0.32, 1.6));
+          if (sp.strobe && prog > 0.42) {
+            const tw = 0.25 + 0.75 * Math.pow(0.5 + 0.5 * Math.sin(now * 0.036 + sp.phase), 2);
+            alpha *= tw;
+          }
+          alpha *= fade * (0.72 + 0.22 * (sp.depth || 1));
+          if (alpha <= 0.01) { sp.drawA = 0; continue; }
+
+          // Sample active bright sparks for soft dynamic rose illumination
+          if ((i & 7) === 0 && spSampleCount < 18 && prog < 0.65) {
+            const sw = (1 - prog) * 0.045;
+            lwSum += sw;
+            lxAcc += ((sp.x - CX) / Math.max(1, W)) * 2.0 * sw;
+            lyAcc += 0.25 * sw;
+            lzAcc += clamp((H * 0.52 - sp.y) / Math.max(1, H) * 2.2, -0.2, 1.4) * sw;
+            lrAcc += (cr8 / 255) * sw;
+            lgAcc += (cg8 / 255) * sw;
+            lbAcc += (cb8 / 255) * sw;
+            spSampleCount++;
+          }
+
+          // Pass 4a: Batched 1-segment quadratic pyrotechnic trail (zero rgba alloc, no interleaved GPU flushes)
+          const colCss = rgbCss(cr8 & 0xFC, cg8 & 0xFC, cb8 & 0xFC);
+          sp.drawA = alpha;
+          sp.hr = clamp(sp.size * (prog < 0.2 ? 3.0 : 2.3), 2.2, 4.8);
+          const N = sp.hCount;
+          if (N >= 2) {
+            const maxK = N - 1;
+            const kMid = Math.max(1, (maxK * 0.45) | 0);
+            const i0 = sp.hIdx;
+            const iMid = (i0 - kMid + TRAIL_LEN) % TRAIL_LEN;
+            const iEnd = (i0 - maxK + TRAIL_LEN) % TRAIL_LEN;
+            ctx.globalAlpha = alpha * 0.68;
+            ctx.strokeStyle = colCss;
+            ctx.lineWidth = Math.max(0.5, sp.size * 0.78);
+            ctx.beginPath();
+            ctx.moveTo(sp.hx[iEnd], sp.hy[iEnd]);
+            ctx.quadraticCurveTo(sp.hx[iMid], sp.hy[iMid], sp.hx[i0], sp.hy[i0]);
+            ctx.stroke();
+          }
+        }
+
+        // Pass 4b: Contiguous spark halo sprite batch (keeps GPU texture pipeline intact)
+        for (let i = 0, len = fwSparks.length; i < len; i++) {
+          const sp = fwSparks[i];
+          if (sp.drawA <= 0.01) continue;
+          const hr = sp.hr;
+          ctx.globalAlpha = sp.drawA * 0.88;
+          const spr = (sp.pal.goldRatio > 0.5 && !sp.useAlt) ? SOFT_GOLD : SOFT;
+          ctx.drawImage(spr, sp.x - hr, sp.y - hr, hr * 2, hr * 2);
+        }
+        ctx.globalAlpha = 1;
+
+        // 5. Shimmering falling sparkle dust (fwEmbers via cached color LUT)
+        const emberDrag = Math.pow(0.90, dragStep);
+        for (let i = fwEmbers.length - 1; i >= 0; i--) {
+          const em = fwEmbers[i];
+          em.age += dts;
+          if (em.age >= em.life) {
+            const lastEm = fwEmbers.pop();
+            if (i < fwEmbers.length) fwEmbers[i] = lastEm;
+            if (emberPool.length < MAX_FW_EMBERS) emberPool.push(em);
+            continue;
+          }
+          em.vx *= emberDrag;
+          em.vy = em.vy * emberDrag + 38 * dts;
+          em.x += em.vx * dts;
+          em.y += em.vy * dts;
+
+          const t = em.age / em.life;
+          let a = Math.pow(1 - t, 1.45) * 0.85 * fade;
+          if (em.twinkle) {
+            a *= 0.25 + 0.75 * Math.pow(0.5 + 0.5 * Math.sin(now * 0.042 + em.phase), 2);
+          }
+          if (a <= 0.015) continue;
+
+          const sz = em.size * (1 - t * 0.4);
+          ctx.globalAlpha = a;
+          ctx.fillStyle = rgbCss(em.col[0], em.col[1], em.col[2]);
+          ctx.fillRect(em.x - sz, em.y - sz, sz * 2, sz * 2);
+        }
+        ctx.globalAlpha = 1;
+
+        // 6. Crackling micro-pop flashes (fwPops)
+        for (let i = fwPops.length - 1; i >= 0; i--) {
+          const pp = fwPops[i];
+          pp.age += dts;
+          if (pp.age >= pp.life) { fwPops.splice(i, 1); continue; }
+          const t = pp.age / pp.life;
+          const a = Math.sin(t * PI) * 0.95 * fade;
+          ctx.fillStyle = `rgba(${pp.col[0]},${pp.col[1]},${pp.col[2]},${a})`;
+          ctx.beginPath();
+          ctx.arc(pp.x, pp.y, pp.r * (0.6 + t * 0.6), 0, TAU);
+          ctx.fill();
+          ctx.strokeStyle = `rgba(${pp.col[0]},${pp.col[1]},${pp.col[2]},${a * 0.75})`;
+          ctx.lineWidth = 0.75;
+          const rr = pp.r * 3.4;
+          ctx.beginPath();
+          ctx.moveTo(pp.x - rr, pp.y); ctx.lineTo(pp.x + rr, pp.y);
+          ctx.moveTo(pp.x, pp.y - rr); ctx.lineTo(pp.x, pp.y + rr);
+          ctx.stroke();
+        }
+
+        // Smoothly update dynamic firework light for the 3D rose
+        if (lwSum > 0.001) {
+          const n = norm3(lxAcc, lyAcc, lzAcc);
+          const intensity = Math.min(0.65, lwSum * 0.55);
+          fwLight.lx += (n[0] - fwLight.lx) * 0.18;
+          fwLight.ly += (n[1] - fwLight.ly) * 0.18;
+          fwLight.lz += (n[2] - fwLight.lz) * 0.18;
+          const tr = (lrAcc / lwSum) * intensity;
+          const tg = (lgAcc / lwSum) * intensity;
+          const tb = (lbAcc / lwSum) * intensity;
+          fwLight.r += (tr - fwLight.r) * 0.22;
+          fwLight.g += (tg - fwLight.g) * 0.22;
+          fwLight.b += (tb - fwLight.b) * 0.22;
+        } else {
+          fwLight.r *= 0.88;
+          fwLight.g *= 0.88;
+          fwLight.b *= 0.88;
+        }
+
+        ctx.restore();
+      }
+
+      /* =========================================================
+         MAIN LOOP
+      ========================================================= */
+      let startTime = performance.now();
+      let loopMode = false;
+      let last = performance.now();
+      let smoothDt = 16.67;
+      let frameIdx = 0;
+      const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
+      const CYCLE = 36;
+
+      window.addEventListener("pointermove", e => {
+        mouse.tx = (e.clientX / W - 0.5) * 2;
+        mouse.ty = (e.clientY / H - 0.5) * 2;
+      });
+      window.addEventListener("pointerleave", () => { mouse.tx = 0; mouse.ty = 0; });
+
+      function frame(now) {
+        const rawDt = Math.min(50, Math.max(1, now - last));
+        last = now;
+        smoothDt += (rawDt - smoothDt) * 0.25;
+        const dt = smoothDt;
+        frameIdx++;
+        const mLerp = 1 - Math.pow(0.965, dt / 16.667);
+        mouse.x += (mouse.tx - mouse.x) * mLerp;
+        mouse.y += (mouse.ty - mouse.y) * mLerp;
+
+        let T = (now - startTime) / 1000;
+        let fade = 1;
+        if (loopMode) {
+          T = T % CYCLE;
+          fade = Math.min(smooth(0, 0.7, T), 1 - smooth(CYCLE - 2.0, CYCLE, T));
+        }
+
+        const gust = Math.sin(now * 0.00042) * 0.6 + Math.sin(now * 0.0011 + 0.7) * 0.4;
+        const heroRose = ROSES[ROSES.length - 1];
+        const heroP = easeInOutSine(clamp((T - heroRose.bloomStart) / heroRose.bloomDur));
+
+        // ---- background
+        ctx.globalCompositeOperation = "source-over";
+        ctx.globalAlpha = 1;
+        ctx.drawImage(bgCv, 0, 0, W, H);
+
+        ctx.globalCompositeOperation = "screen";
+        for (const s of twinkle) {
+          const a = 0.15 + 0.55 * Math.pow(0.5 + 0.5 * Math.sin(now * 0.001 * s.sp + s.ph), 3);
+          ctx.globalAlpha = a;
+          const r = s.r * 6;
+          ctx.drawImage(SOFT, s.x * W - r, s.y * H - r, r * 2, r * 2);
+        }
+
+        ctx.globalAlpha = 0.75 + 0.25 * Math.sin(now * 0.00035);
+        ctx.drawImage(raysCv, Math.sin(now * 0.00012) * 12 - 20, 0, W + 40, H);
+
+        for (const b of bokeh) {
+          const y = (((b.y - now * 0.00001 * b.sp * 10) % 1) + 1) % 1;
+          const x = b.x + Math.sin(now * 0.00018 + b.ph) * 0.015 - mouse.x * b.z * 0.015;
+          const r = b.r * Math.min(W, H) * (0.6 + b.z * 0.7) * (0.92 + 0.08 * Math.sin(now * 0.0006 + b.ph));
+          ctx.globalAlpha = b.a * (0.7 + 0.3 * Math.sin(now * 0.0005 + b.ph * 2));
+          ctx.drawImage(BOKEH[b.c], x * W - r, y * H * 1.1 - H * 0.05 - r, r * 2, r * 2);
+        }
+        ctx.globalCompositeOperation = "source-over";
+        ctx.globalAlpha = 1;
+
+        // ---- shooting stars & fireworks in night sky
+        updateAndDrawMeteors(dt, fade);
+        updateAndDrawFireworks(dt, now, fade);
+
+        // ---- background drifting mist
+        drawMist(dt, now, gust, fade, false);
+
+        // ---- falling petals (far)
+        const fallA = smooth(0.45, 0.90, heroP) * fade;
+        for (const f of falling) {
+          f.y += f.vy * f.z * dt / 1000;
+          f.x += (f.vx + gust * 0.009 + Math.sin(now * 0.0007 + f.ph) * 0.012) * dt / 1000;
+          f.rot += f.vr * dt / 1000; f.flip += f.vf * dt / 1000;
+          if (f.y > 1.12 || f.x < -0.1 || f.x > 1.1) newFall(f, false);
+          if (f.z <= 0.95 && fallA > 0) drawFallPetal(f, fallA);
+        }
+
+        // ---- 5-rose bouquet: 3-slot balanced 3D mesh update + decoupled 60fps wind/breath transform
+        mctx.clearRect(0, 0, midCv.width, midCv.height);
+        const mxScale = midCv.width / W, myScale = midCv.height / H;
+        let anyRose = false;
+        const slot = frameIdx % 3;
+        const fwTot = fwLight.r + fwLight.g + fwLight.b;
+
+        for (let rIdx = 0; rIdx < ROSES.length; rIdx++) {
+          const rose = ROSES[rIdx];
+          const grow = easeOutCubic(clamp((T - rose.stemStart) / 2.2));
+          if (grow <= 0.001) continue;
+
+          const hst = clamp((T - rose.stemStart - 0.85) / 1.9);
+          const hs = hst * hst * (3 - 2 * hst);
+          const p = easeInOutSine(clamp((T - rose.bloomStart) / rose.bloomDur));
+          const ep = easeInOutSine(p);
+
+          const beta = lerp(0.36, 0.68, ep) + rose.pitch + mouse.y * 0.05;
+          cam.cb = Math.cos(beta); cam.sb = Math.sin(beta);
+          cam.Cy = -cam.cb; cam.Cz = cam.sb;
+          cam.HK = norm3(LK[0], LK[1] + cam.Cy, LK[2] + cam.Cz);
+          const windSway = Math.sin(now * 0.00071 + rose.seedOffset * 0.13) * 0.042 + Math.sin(now * 0.0017 + 1.3 + rose.seedOffset) * 0.011 + gust * 0.014;
+          const wy = rose.lean + windSway;
+          const wx = Math.sin(now * 0.00053 + 1 + rose.seedOffset * 0.17) * 0.025;
+          cam.cwy = Math.cos(wy); cam.swy = Math.sin(wy);
+          cam.cwx = Math.cos(wx); cam.swx = Math.sin(wx);
+          cam.spin = rose.spinOff + mouse.x * 0.25;
+          cam.sc = S * rose.scale * hs;
+          cam.hx = CX + rose.dx * SX + wy * S * 0.30 * rose.scale + mouse.x * S * 0.02 * rose.depth;
+          cam.hy = H * lerp(0.61, 0.56, ep) + rose.dy * S + Math.abs(wy) * S * 0.04;
+
+          // aura behind head (pre-rendered radial sprite)
+          transform(0, 0, 0.15, TMP2, 0);
+          const auraA = (0.04 + 0.08 * p) * fade * hs;
+          if (auraA > 0.001) {
+            const ar = S * rose.scale * 1.05;
+            ctx.globalAlpha = auraA;
+            ctx.drawImage(AURA_SPR, TMP2[3] - ar, TMP2[4] - ar, ar * 2, ar * 2);
+            ctx.globalAlpha = 1;
+          }
+
+          // stem, thorns & compound leaves
+          transform(0, 0, -0.12, TMP2, 0);
+          drawPlant(now, { x: TMP2[3], y: TMP2[4] }, grow, rose, T, fade);
+          transform(0, 0, -0.085, TMP2, 0);
+          drawReceptacle(TMP2[3], TMP2[4], hs, rose.scale, fade);
+
+          // 3D flower head (3-slot balanced mesh update + 60fps decoupled wind/breath transform)
+          if (hs > 0.01) {
+            anyRose = true;
+            const inSlot = rose.isHero ? (slot === 0) : (slot === ((rIdx >> 1) + 1));
+            const dirty = !rose.hasCache || Math.abs(p - rose.cacheP) > 0.0004 || Math.abs(fwTot - (rose.cacheFw || 0)) > 0.025 || Math.abs(mouse.x - (rose.cacheMx || 0)) + Math.abs(mouse.y - (rose.cacheMy || 0)) > 0.015;
+            if (!rose.hasCache || (inSlot && dirty)) {
+              const mWy = rose.lean + mouse.x * 0.08;
+              const mWx = mouse.y * 0.04;
+              cam.cwy = Math.cos(mWy); cam.swy = Math.sin(mWy);
+              cam.cwx = Math.cos(mWx); cam.swx = Math.sin(mWx);
+              renderRose(now, p, rose);
+              rose.cacheP = p;
+              rose.cacheFw = fwTot;
+              rose.cacheMx = mouse.x;
+              rose.cacheMy = mouse.y;
+            }
+            const breath = 1 + 0.0035 * Math.sin(now * 0.0012 + rose.seedOffset);
+            const rHalf = rose.pad * hs * breath, rw = rHalf * 2;
+            const rot2d = windSway * 0.52 + Math.sin(now * 0.00035 + rose.seedOffset) * 0.018;
+            const tiltY = 1 - wx * 0.25;
+            ctx.save();
+            ctx.globalAlpha = fade;
+            ctx.translate(cam.hx, cam.hy);
+            ctx.rotate(rot2d);
+            ctx.scale(1, tiltY);
+            ctx.drawImage(rose.cv, -rHalf, -rHalf, rw, rw);
+            ctx.restore();
+            mctx.drawImage(rose.cv, (cam.hx - rHalf) * mxScale, (cam.hy - rHalf) * myScale, rw * mxScale, rw * myScale);
+          } else {
+            rose.hasCache = false;
+          }
+        }
+
+        // shared bloom / glow across all 5 roses
+        if (anyRose) {
+          gctx.clearRect(0, 0, glowCv.width, glowCv.height);
+          gctx.drawImage(midCv, 0, 0, glowCv.width, glowCv.height);
+          ctx.globalCompositeOperation = "screen";
+          ctx.globalAlpha = 0.34 * fade;
+          ctx.drawImage(glowCv, 0, 0, W, H);
+          ctx.globalCompositeOperation = "source-over";
+          ctx.globalAlpha = 1;
+        }
+
+        // ---- fireflies & foreground garden mist
+        drawFireflies(now, gust, fade);
+        drawMist(dt, now, gust, fade, true);
+
+        // ---- dust motes
+        ctx.globalCompositeOperation = "screen";
+        for (const d of dust) {
+          const y = (((d.y - now * 0.00001 * d.sp * 3) % 1) + 1) % 1;
+          const x = d.x + Math.sin(now * 0.0004 + d.ph) * 0.01 + mouse.x * 0.006;
+          const a = d.a * (0.4 + 0.6 * (0.5 + 0.5 * Math.sin(now * 0.0016 + d.ph)));
+          ctx.globalAlpha = a;
+          const r = d.r * 5;
+          ctx.drawImage(d.gold ? SOFT_GOLD : SOFT, x * W - r, y * H - r, r * 2, r * 2);
+        }
+        ctx.globalCompositeOperation = "source-over";
+        ctx.globalAlpha = 1;
+
+        // ---- falling petals (near)
+        if (fallA > 0) for (const f of falling) if (f.z > 0.95) drawFallPetal(f, fallA);
+
+        // ---- foreground bokeh
+        ctx.globalCompositeOperation = "screen";
+        for (const b of fgBokeh) {
+          const r = b.r * Math.min(W, H) * 1.6;
+          const x = b.x * W + Math.sin(now * 0.00015 + b.ph) * 20 - mouse.x * 30;
+          const y = b.y * H + Math.cos(now * 0.00012 + b.ph) * 14 - mouse.y * 20;
+          ctx.globalAlpha = b.a * (0.75 + 0.25 * Math.sin(now * 0.0004 + b.ph));
+          ctx.drawImage(BOKEH[b.c], x - r, y - r, r * 2, r * 2);
+        }
+        ctx.globalCompositeOperation = "source-over";
+        ctx.globalAlpha = 1;
+
+        // ---- vignette
+        ctx.drawImage(vigCv, 0, 0, W, H);
+
+        requestAnimationFrame(frame);
+      }
+
+      replayBtn.addEventListener("click", () => {
+        startTime = performance.now();
+        for (const r of ROSES) r.hasCache = false;
+        falling.forEach(f => newFall(f, true));
+        initFireworks();
+      });
+
+      loopBtn.addEventListener("click", () => {
+        loopMode = !loopMode;
+        loopBtn.classList.toggle("active", loopMode);
+        loopBtn.textContent = loopMode ? "✓ Siklus Aktif" : "∞ Siklus";
+        for (const r of ROSES) r.hasCache = false;
+        startTime = performance.now();
+      });
+
+      window.addEventListener("resize", resize);
+      resize();
+      initFireworks();
+      requestAnimationFrame(frame);
+    })();
+  </script>
+</body>
+
+</html>
