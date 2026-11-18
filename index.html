@@ -1402,10 +1402,6 @@
         return c;
       });
 
-        x.stroke();
-        return c;
-      });
-
       function drawFallPetal(f, alpha) {
         const x = f.x * W, y = f.y * H, size = f.sz * S * f.z;
         const fy = Math.cos(f.flip);
@@ -2133,53 +2129,22 @@
         ctx.restore();
       }
 
-        ctx.strokeStyle = `rgba(${pp.col[0]},${pp.col[1]},${pp.col[2]},${a * 0.75})`;
-        ctx.lineWidth = 0.75;
-        const rr = pp.r * 3.4;
-        ctx.beginPath();
-        ctx.moveTo(pp.x - rr, pp.y); ctx.lineTo(pp.x + rr, pp.y);
-        ctx.moveTo(pp.x, pp.y - rr); ctx.lineTo(pp.x, pp.y + rr);
-        ctx.stroke();
-      }
+      /* =========================================================
+         MAIN LOOP
+      ========================================================= */
+      let startTime = performance.now();
+      let loopMode = false;
+      let last = performance.now();
+      let smoothDt = 16.67;
+      let frameIdx = 0;
+      const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
+      const CYCLE = 36;
 
-      // Smoothly update dynamic firework light for the 3D rose
-      if (lwSum > 0.001) {
-        const n = norm3(lxAcc, lyAcc, lzAcc);
-        const intensity = Math.min(0.65, lwSum * 0.55);
-        fwLight.lx += (n[0] - fwLight.lx) * 0.18;
-        fwLight.ly += (n[1] - fwLight.ly) * 0.18;
-        fwLight.lz += (n[2] - fwLight.lz) * 0.18;
-        const tr = (lrAcc / lwSum) * intensity;
-        const tg = (lgAcc / lwSum) * intensity;
-        const tb = (lbAcc / lwSum) * intensity;
-        fwLight.r += (tr - fwLight.r) * 0.22;
-        fwLight.g += (tg - fwLight.g) * 0.22;
-        fwLight.b += (tb - fwLight.b) * 0.22;
-      } else {
-        fwLight.r *= 0.88;
-        fwLight.g *= 0.88;
-        fwLight.b *= 0.88;
-      }
-
-      ctx.restore();
-    }
-
-    /* =========================================================
-       MAIN LOOP
-    ========================================================= */
-    let startTime = performance.now();
-    let loopMode = false;
-    let last = performance.now();
-    let smoothDt = 16.67;
-    let frameIdx = 0;
-    const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
-    const CYCLE = 36;
-
-    window.addEventListener("pointermove", e => {
-      mouse.tx = (e.clientX / W - 0.5) * 2;
-      mouse.ty = (e.clientY / H - 0.5) * 2;
-    });
-    window.addEventListener("pointerleave", () => { mouse.tx = 0; mouse.ty = 0; });
+      window.addEventListener("pointermove", e => {
+        mouse.tx = (e.clientX / W - 0.5) * 2;
+        mouse.ty = (e.clientY / H - 0.5) * 2;
+      });
+      window.addEventListener("pointerleave", () => { mouse.tx = 0; mouse.ty = 0; });
 
     function frame(now) {
       const rawDt = Math.min(50, Math.max(1, now - last));
